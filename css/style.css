@@ -48,7 +48,6 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  height: 100%;
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-body);
@@ -191,8 +190,17 @@ html, body {
   padding: 14px;
   border-bottom: 1px solid var(--border);
   overflow-y: auto;
-  flex-shrink: 0;
+  flex: 0 1 auto;
+  max-height: 52vh;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--bg-panel);
 }
+
+#sidebar-filters::-webkit-scrollbar { width: 4px; }
+#sidebar-filters::-webkit-scrollbar-track { background: var(--bg-panel); }
+#sidebar-filters::-webkit-scrollbar-thumb { background: var(--border-light); }
+#sidebar-filters::-webkit-scrollbar-thumb:hover { background: var(--accent-gold-dim); }
 
 .filter-section {
   margin-bottom: 14px;
@@ -387,8 +395,11 @@ html, body {
 }
 
 #incident-list {
-  flex: 1;
+  flex: 1 1 0;
   overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--bg-panel);
 }
 
 #incident-list::-webkit-scrollbar { width: 4px; }
@@ -833,16 +844,6 @@ html, body {
   #detail-panel { width: calc(100vw - 28px); }
 }
 
-/* ── SIDEBAR SCROLLBAR FIX ───────────────────────────────── */
-#sidebar-filters {
-  max-height: 55vh !important;
-  overflow-y: auto !important;
-}
-
-#sidebar-filters::-webkit-scrollbar { width: 4px; }
-#sidebar-filters::-webkit-scrollbar-track { background: var(--bg-panel); }
-#sidebar-filters::-webkit-scrollbar-thumb { background: var(--border); }
-
 /* ── FINANCIAL IMPACT SECTION ────────────────────────────── */
 .dp-financial {
   display: flex;
@@ -913,29 +914,4 @@ html, body {
   margin-top: 3px;
   line-height: 1.4;
   font-style: italic;
-}
-
-/* ── SIDEBAR SCROLL FIX (override) ──────────────────────── */
-#sidebar {
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-#sidebar-filters {
-  flex: 0 1 auto;
-  overflow-y: scroll !important;
-  max-height: 52vh !important;
-  min-height: 0;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) var(--bg-panel);
-}
-
-#incident-list {
-  flex: 1 1 0;
-  overflow-y: scroll !important;
-  min-height: 0;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) var(--bg-panel);
 }
