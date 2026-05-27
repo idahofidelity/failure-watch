@@ -184,6 +184,22 @@
 <!-- Toast -->
 <div id="toast"></div>
 
+<!-- Mobile backdrop -->
+<div id="sidebar-backdrop"></div>
+
+<!-- Mobile bottom bar -->
+<div id="mobile-bar">
+  <button class="mobile-tab active" id="mob-map" onclick="mobileTab('map')">
+    <span class="mobile-tab-icon">🗺️</span>Map
+  </button>
+  <button class="mobile-tab" id="mob-list" onclick="mobileTab('list')">
+    <span class="mobile-tab-icon">📋</span>List
+  </button>
+  <button class="mobile-tab" id="mob-filter" onclick="mobileTab('filter')">
+    <span class="mobile-tab-icon">🔍</span>Filter
+  </button>
+</div>
+
 <!-- Scripts -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="config.js"></script>
