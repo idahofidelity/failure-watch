@@ -846,11 +846,129 @@ html, body {
   #header-stats { display: none; }
 }
 
-@media (max-width: 600px) {
-  #sidebar { position: absolute; left: -100%; transition: left 0.3s; z-index: 800; }
-  #sidebar.open { left: 0; }
-  #detail-panel { width: calc(100vw - 28px); }
+/* ── MOBILE ──────────────────────────────────────────────── */
+#mobile-bar {
+  display: none;
 }
+
+@media (max-width: 700px) {
+  :root { --header-height: 52px; }
+
+  /* Header */
+  #header { padding: 0 12px; }
+  #site-title { font-size: 13px; letter-spacing: 0.03em; }
+  #iff-badge .iff-text { display: none; }
+  #header-stats { display: none; }
+  #header-right { display: none; }
+
+  /* App layout: stack vertically, map on top */
+  #app {
+    flex-direction: column;
+  }
+
+  /* Sidebar: hidden off-screen left, slides in as overlay */
+  #sidebar {
+    position: fixed;
+    top: var(--header-height);
+    left: -105%;
+    bottom: 0;
+    width: 88vw;
+    max-width: 340px;
+    z-index: 900;
+    transition: left 0.25s ease;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.6);
+    height: calc(100vh - var(--header-height));
+  }
+
+  #sidebar.open {
+    left: 0;
+  }
+
+  /* Sidebar filters: taller on mobile */
+  #sidebar-filters {
+    height: 48vh !important;
+    max-height: 48vh !important;
+  }
+
+  /* Map: full screen */
+  #map-container {
+    position: fixed;
+    top: var(--header-height);
+    left: 0; right: 0; bottom: 56px;
+    z-index: 1;
+  }
+
+  /* Detail panel: full screen bottom sheet */
+  #detail-panel {
+    position: fixed;
+    top: auto !important;
+    bottom: 56px;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    height: 65vh !important;
+    border-top: 2px solid var(--accent-gold);
+    border-left: none;
+    border-right: none;
+    z-index: 850;
+  }
+
+  /* Legend: hidden on mobile to save space */
+  #map-legend { display: none; }
+
+  /* Mobile bottom bar */
+  #mobile-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 56px;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    z-index: 1000;
+    align-items: stretch;
+  }
+
+  .mobile-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-tab.active {
+    color: var(--accent-gold);
+    border-top: 2px solid var(--accent-gold);
+  }
+
+  .mobile-tab-icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  /* Sidebar overlay backdrop */
+  #sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 880;
+  }
+
+  #sidebar-backdrop.show { display: block; }
+}
+
 
 /* ── FINANCIAL IMPACT SECTION ────────────────────────────── */
 .dp-financial {
