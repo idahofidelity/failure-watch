@@ -19,5 +19,5 @@ const CONFIG = {
   // Branding
   SITE_NAME: "US Industrial Incident Tracker",
   ORG_NAME: "Idaho Fidelity Foundation",
-  ORG_URL: "https://idahofidelity.org",
+  ORG_URL: "https://idahofidelity.com",
 };
