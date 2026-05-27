@@ -189,17 +189,18 @@ html, body {
 #sidebar-filters {
   padding: 14px;
   border-bottom: 1px solid var(--border);
-  overflow-y: auto;
-  flex: 0 1 auto;
-  max-height: 52vh;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  flex: 0 0 auto;
+  height: 50vh;
   min-height: 0;
   scrollbar-width: thin;
-  scrollbar-color: var(--border) var(--bg-panel);
+  scrollbar-color: var(--border-light) var(--bg-panel);
 }
 
-#sidebar-filters::-webkit-scrollbar { width: 4px; }
+#sidebar-filters::-webkit-scrollbar { width: 6px; }
 #sidebar-filters::-webkit-scrollbar-track { background: var(--bg-panel); }
-#sidebar-filters::-webkit-scrollbar-thumb { background: var(--border-light); }
+#sidebar-filters::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
 #sidebar-filters::-webkit-scrollbar-thumb:hover { background: var(--accent-gold-dim); }
 
 .filter-section {
@@ -396,15 +397,17 @@ html, body {
 
 #incident-list {
   flex: 1 1 0;
-  overflow-y: auto;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
   min-height: 0;
   scrollbar-width: thin;
-  scrollbar-color: var(--border) var(--bg-panel);
+  scrollbar-color: var(--border-light) var(--bg-panel);
 }
 
-#incident-list::-webkit-scrollbar { width: 4px; }
+#incident-list::-webkit-scrollbar { width: 6px; }
 #incident-list::-webkit-scrollbar-track { background: var(--bg-panel); }
-#incident-list::-webkit-scrollbar-thumb { background: var(--border); }
+#incident-list::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+#incident-list::-webkit-scrollbar-thumb:hover { background: var(--accent-gold-dim); }
 #incident-list::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
 
 .incident-card {
