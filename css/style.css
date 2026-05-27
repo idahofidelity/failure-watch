@@ -829,3 +829,85 @@ html, body {
   #sidebar.open { left: 0; }
   #detail-panel { width: calc(100vw - 28px); }
 }
+
+/* ── SIDEBAR SCROLLBAR FIX ───────────────────────────────── */
+#sidebar-filters {
+  max-height: 55vh !important;
+  overflow-y: auto !important;
+}
+
+#sidebar-filters::-webkit-scrollbar { width: 4px; }
+#sidebar-filters::-webkit-scrollbar-track { background: var(--bg-panel); }
+#sidebar-filters::-webkit-scrollbar-thumb { background: var(--border); }
+
+/* ── FINANCIAL IMPACT SECTION ────────────────────────────── */
+.dp-financial {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.dp-fin-row {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 8px 10px;
+}
+
+.dp-fin-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 3px;
+}
+
+.dp-fin-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent-gold);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.dp-fin-value.unknown {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.dp-fin-adj {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.dp-fin-badge {
+  font-size: 9px;
+  padding: 2px 6px;
+  border: 1px solid;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 400;
+}
+
+.dp-fin-badge.confirmed {
+  border-color: #00c896;
+  color: #00c896;
+}
+
+.dp-fin-badge.estimated {
+  border-color: #ffd93d;
+  color: #ffd93d;
+}
+
+.dp-fin-note {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  line-height: 1.4;
+  font-style: italic;
+}
