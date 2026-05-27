@@ -443,13 +443,32 @@ async function fetchArticles(inc) {
   const container = document.getElementById('dp-articles');
   if (!container) return;
 
-  // Attempt 1: specific query
+  // Check static fallback FIRST — saves API calls and is more reliable
+  const fallback = (typeof FALLBACK_ARTICLES !== 'undefined') ? FALLBACK_ARTICLES[inc.id] : null;
+  if (fallback && fallback.length) {
+    // Still try GNews in background for fresher articles, but show fallback immediately
+    state.articleCache[cacheKey] = fallback;
+    renderArticles(fallback);
+    // Try to enhance with live articles in background
+    gnewsFetch(
+      `"${inc.name}" OR "${inc.city} ${(inc.facility_type||'').replace(/_/g,' ')} explosion fire leak"`,
+      inc.date, getDatePlusDays(inc.date, 90)
+    ).then(async live => {
+      if (!live.length) return;
+      try { live = await scoreArticlesForBias(live, inc.name); } catch(e) {}
+      const merged = [...live.slice(0,3), ...fallback].slice(0,5);
+      state.articleCache[cacheKey] = merged;
+      if (document.getElementById('dp-articles')) renderArticles(merged);
+    }).catch(() => {});
+    return;
+  }
+
+  // No static fallback — try GNews live
   let articles = await gnewsFetch(
     `"${inc.name}" OR "${inc.city} ${(inc.facility_type||'').replace(/_/g,' ')} explosion fire leak"`,
     inc.date, getDatePlusDays(inc.date, 90)
   );
 
-  // Attempt 2: broader query if no results
   if (!articles.length) {
     articles = await gnewsFetch(
       `${inc.city} ${inc.state} ${(inc.facility_type||'').replace(/_/g,' ')} ${inc.date.split('-')[0]}`,
@@ -457,19 +476,11 @@ async function fetchArticles(inc) {
     );
   }
 
-  // Attempt 3: static fallback articles
   if (!articles.length) {
-    const fallback = (typeof FALLBACK_ARTICLES !== 'undefined') ? FALLBACK_ARTICLES[inc.id] : null;
-    if (fallback && fallback.length) {
-      state.articleCache[cacheKey] = fallback;
-      renderArticles(fallback);
-      return;
-    }
-    container.innerHTML = `<div class="article-loading" style="color:var(--text-muted)">No articles found for this incident. Try searching: <a href="https://news.google.com/search?q=${encodeURIComponent(inc.name)}" target="_blank" rel="noopener" style="color:var(--accent-gold)">Google News ↗</a></div>`;
+    container.innerHTML = `<div class="article-loading" style="color:var(--text-muted)">No articles found. <a href="https://news.google.com/search?q=${encodeURIComponent(inc.name)}" target="_blank" rel="noopener" style="color:var(--accent-gold)">Search Google News ↗</a></div>`;
     return;
   }
 
-  // Score for bias
   try { articles = await scoreArticlesForBias(articles, inc.name); }
   catch (e) { articles = articles.map(a => ({ ...a, biasScore: 'unscored', biasLabel: 'Unscored' })); }
 
