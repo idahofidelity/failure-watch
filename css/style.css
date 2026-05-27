@@ -198,10 +198,10 @@ html, body {
   scrollbar-color: var(--border-light) var(--bg-panel);
 }
 
-#sidebar-filters::-webkit-scrollbar { width: 6px; }
+#sidebar-filters::-webkit-scrollbar { width: 9px; }
 #sidebar-filters::-webkit-scrollbar-track { background: var(--bg-panel); }
-#sidebar-filters::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
-#sidebar-filters::-webkit-scrollbar-thumb:hover { background: var(--accent-gold-dim); }
+#sidebar-filters::-webkit-scrollbar-thumb { background: #4a5270; border-radius: 3px; }
+#sidebar-filters::-webkit-scrollbar-thumb:hover { background: var(--accent-gold); }
 
 .filter-section {
   margin-bottom: 14px;
@@ -404,10 +404,10 @@ html, body {
   scrollbar-color: var(--border-light) var(--bg-panel);
 }
 
-#incident-list::-webkit-scrollbar { width: 6px; }
+#incident-list::-webkit-scrollbar { width: 9px; }
 #incident-list::-webkit-scrollbar-track { background: var(--bg-panel); }
-#incident-list::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
-#incident-list::-webkit-scrollbar-thumb:hover { background: var(--accent-gold-dim); }
+#incident-list::-webkit-scrollbar-thumb { background: #4a5270; border-radius: 3px; }
+#incident-list::-webkit-scrollbar-thumb:hover { background: var(--accent-gold); }
 #incident-list::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
 
 .incident-card {
@@ -508,14 +508,13 @@ html, body {
   top: 14px;
   right: 14px;
   width: 380px;
-  max-height: calc(100vh - var(--header-height) - 28px);
+  height: calc(100vh - var(--header-height) - 28px);
   background: var(--bg-panel);
   border: 1px solid var(--border);
   display: none;
   flex-direction: column;
   z-index: 600;
   overflow: hidden;
-  height: 100%;
   box-shadow: -4px 0 24px rgba(0,0,0,0.4);
 }
 
@@ -554,13 +553,19 @@ html, body {
 #dp-close:hover { border-color: var(--text-primary); color: var(--text-primary); }
 
 #dp-body {
-  overflow-y: auto;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
   flex: 1;
+  min-height: 0;
   padding: 14px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: #4a5270 var(--bg-panel);
 }
 
-#dp-body::-webkit-scrollbar { width: 4px; }
-#dp-body::-webkit-scrollbar-thumb { background: var(--border); }
+#dp-body::-webkit-scrollbar { width: 9px; }
+#dp-body::-webkit-scrollbar-track { background: var(--bg-panel); }
+#dp-body::-webkit-scrollbar-thumb { background: #4a5270; border-radius: 3px; }
+#dp-body::-webkit-scrollbar-thumb:hover { background: var(--accent-gold); }
 
 .dp-row {
   display: flex;
