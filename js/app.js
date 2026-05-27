@@ -440,29 +440,52 @@ async function fetchArticles(inc) {
   const container = document.getElementById('dp-articles');
   if (!container) return;
 
-  const query = encodeURIComponent(`"${inc.name}" OR "${inc.city} ${(inc.facility_type||'').replace(/_/g,' ')} explosion fire leak"`);
-  const from = inc.date;
-  const to = getDatePlusDays(inc.date, 90);
-  const gnewsUrl = `https://gnews.io/api/v4/search?q=${query}&from=${from}&to=${to}&lang=en&country=us&max=10&apikey=${CONFIG.GNEWS_API_KEY}`;
+  // Attempt 1: specific query
+  let articles = await gnewsFetch(
+    `"${inc.name}" OR "${inc.city} ${(inc.facility_type||'').replace(/_/g,' ')} explosion fire leak"`,
+    inc.date, getDatePlusDays(inc.date, 90)
+  );
 
-  let articles = [];
-  try {
-    const res = await fetch(gnewsUrl);
-    const data = await res.json();
-    articles = (data.articles || []).map(a => ({ title: a.title, url: a.url, source: a.source?.name || 'Unknown', publishedAt: a.publishedAt }));
-  } catch (e) { console.warn('GNews fetch failed:', e); }
+  // Attempt 2: broader query if no results
+  if (!articles.length) {
+    articles = await gnewsFetch(
+      `${inc.city} ${inc.state} ${(inc.facility_type||'').replace(/_/g,' ')} ${inc.date.split('-')[0]}`,
+      getDatePlusDays(inc.date, -30), getDatePlusDays(inc.date, 180)
+    );
+  }
 
-  if (articles.length > 0) {
-    try { articles = await scoreArticlesForBias(articles, inc.name); }
-    catch (e) { articles = articles.map(a => ({ ...a, biasScore: 'unscored', biasLabel: 'Unscored' })); }
-  } else {
-    container.innerHTML = `<div class="article-loading" style="color:var(--text-muted)">No articles found via GNews for this incident.</div>`;
+  // Attempt 3: static fallback articles
+  if (!articles.length) {
+    const fallback = (typeof FALLBACK_ARTICLES !== 'undefined') ? FALLBACK_ARTICLES[inc.id] : null;
+    if (fallback && fallback.length) {
+      state.articleCache[cacheKey] = fallback;
+      renderArticles(fallback);
+      return;
+    }
+    container.innerHTML = `<div class="article-loading" style="color:var(--text-muted)">No articles found for this incident. Try searching: <a href="https://news.google.com/search?q=${encodeURIComponent(inc.name)}" target="_blank" rel="noopener" style="color:var(--accent-gold)">Google News ↗</a></div>`;
     return;
   }
+
+  // Score for bias
+  try { articles = await scoreArticlesForBias(articles, inc.name); }
+  catch (e) { articles = articles.map(a => ({ ...a, biasScore: 'unscored', biasLabel: 'Unscored' })); }
 
   const top = articles.slice(0, 5);
   state.articleCache[cacheKey] = top;
   renderArticles(top);
+}
+
+async function gnewsFetch(query, from, to) {
+  try {
+    const q = encodeURIComponent(query);
+    const url = `https://gnews.io/api/v4/search?q=${q}&from=${from}&to=${to}&lang=en&country=us&max=10&apikey=${CONFIG.GNEWS_API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    return (data.articles || []).map(a => ({ title: a.title, url: a.url, source: a.source?.name || 'Unknown', publishedAt: a.publishedAt }));
+  } catch (e) {
+    console.warn('GNews fetch failed:', e);
+    return [];
+  }
 }
 
 async function scoreArticlesForBias(articles, incidentName) {
