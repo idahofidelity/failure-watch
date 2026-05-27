@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>US Industrial Incident Tracker | Idaho Fidelity Foundation</title>
+  <meta name="description" content="6-year interactive map of US chemical plant, oil refinery, pipeline, rail tanker, and industrial incident data. Built by Idaho Fidelity Foundation." />
+  <meta name="author" content="Idaho Fidelity Foundation" />
+  <meta property="og:title" content="US Industrial Incident Tracker" />
+  <meta property="og:description" content="Interactive map tracking US industrial incidents 2019–present. Idaho Fidelity Foundation." />
+  <meta property="og:type" content="website" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- App CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ── LOADING OVERLAY ── -->
+<div id="loading-overlay">
+  <div class="load-eagle">🦅</div>
+  <div class="load-title">US INDUSTRIAL INCIDENT TRACKER</div>
+  <div class="load-sub">Idaho Fidelity Foundation · Loading Data...</div>
+</div>
+
+<!-- ── HEADER ── -->
+<header id="header">
+  <div id="header-left">
+    <a id="iff-badge" href="https://idahofidelity.org" target="_blank" rel="noopener">
+      <span class="iff-eagle">🦅</span>
+      <div class="iff-text">
+        <strong>IFF</strong>
+        Idaho Fidelity Foundation
+      </div>
+    </a>
+    <div id="site-title">US INDUSTRIAL <span>INCIDENT TRACKER</span></div>
+  </div>
+
+  <div id="header-stats">
+    <div class="hstat">
+      <div class="hstat-val" id="stat-total">—</div>
+      <div class="hstat-label">Incidents</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="stat-fatalities">—</div>
+      <div class="hstat-label">Fatalities</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="stat-injuries">—</div>
+      <div class="hstat-label">Injuries</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="stat-evacuations">—</div>
+      <div class="hstat-label">Evacuated</div>
+    </div>
+  </div>
+
+  <div id="header-right">
+    <a href="https://idahofidelity.org" target="_blank" rel="noopener" class="header-btn">idahofidelity.org</a>
+  </div>
+</header>
+
+<!-- ── APP ── -->
+<div id="app">
+
+  <!-- ── SIDEBAR ── -->
+  <aside id="sidebar">
+    <div id="sidebar-filters">
+
+      <!-- Search -->
+      <div class="filter-section">
+        <div class="filter-title">Search</div>
+        <input type="text" id="search-input" placeholder="Incident name, city, state, keyword..." />
+      </div>
+
+      <!-- Year Range -->
+      <div class="filter-section">
+        <div class="filter-title">Year Range</div>
+        <div class="year-range-row">
+          <select class="year-select" id="year-from"></select>
+          <span style="color:var(--text-muted);font-family:var(--font-mono);font-size:12px">to</span>
+          <select class="year-select" id="year-to"></select>
+        </div>
+      </div>
+
+      <!-- Cause Filter -->
+      <div class="filter-section">
+        <div class="filter-title">Cause</div>
+        <div class="filter-toggles" id="cause-toggles"></div>
+      </div>
+
+      <!-- Facility Type Filter -->
+      <div class="filter-section">
+        <div class="filter-title">Facility Type</div>
+        <div class="facility-toggles" id="facility-toggles"></div>
+      </div>
+
+      <!-- Cross-Reference Filter -->
+      <div class="filter-section">
+        <div class="filter-title">Cross-Reference</div>
+        <div class="xref-toggles">
+          <button class="xref-btn" data-xref="csb">CSB Only</button>
+          <button class="xref-btn" data-xref="epa">EPA RMP Only</button>
+          <button class="xref-btn" data-xref="spilltracker">SpillTracker</button>
+          <button class="xref-btn" data-xref="coalition">Coalition</button>
+        </div>
+        <div style="margin-top:6px;font-family:var(--font-mono);font-size:9px;color:var(--text-muted);line-height:1.5;">
+          SpillTracker = Bloomberg-funded activist tracker. Coalition = environmental NGO. CSB/EPA = federal agencies. Use cross-ref to compare coverage bias.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Incident List Header -->
+    <div id="incident-list-header">
+      <div id="incident-count-label">Loading...</div>
+      <select id="sort-select">
+        <option value="date_desc">Newest First</option>
+        <option value="date_asc">Oldest First</option>
+        <option value="severity">Severity</option>
+        <option value="fatalities">Casualties</option>
+      </select>
+    </div>
+
+    <!-- Incident List -->
+    <div id="incident-list"></div>
+  </aside>
+
+  <!-- ── MAP ── -->
+  <div id="map-container">
+    <div id="map"></div>
+
+    <!-- Detail Panel -->
+    <div id="detail-panel">
+      <div id="dp-header">
+        <div id="dp-title">Incident</div>
+        <button id="dp-close">✕ CLOSE</button>
+      </div>
+      <div id="dp-body"></div>
+    </div>
+
+    <!-- Legend -->
+    <div id="map-legend">
+      <div class="legend-title">Legend</div>
+
+      <div class="legend-section">
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Cause (Color)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#4a9eff"></div>Accidental</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff3b3b"></div>Intentional/Sabotage</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff8c00"></div>Under Investigation</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00c896"></div>Natural Cause</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Unknown/Unresolved</div>
+      </div>
+
+      <div class="legend-section">
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Facility (Shape)</div>
+        <div class="legend-item">■ Oil Refinery</div>
+        <div class="legend-item">◆ Chemical Plant</div>
+        <div class="legend-item">▲ Pipeline</div>
+        <div class="legend-item">⬠ Rail Tanker</div>
+        <div class="legend-item">⬡ Petrochem Storage</div>
+        <div class="legend-item">★ Water Treatment</div>
+      </div>
+
+      <div class="legend-section">
+        <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em">Size = Severity</div>
+        <div class="legend-item">Large = Catastrophic</div>
+        <div class="legend-item">Medium = Major</div>
+        <div class="legend-item">Small = Moderate</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="config.js"></script>
+<script src="data/incidents.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
