@@ -1,0 +1,17 @@
+# IMPORTANT: Never commit live API keys
+# Before pushing, make sure config.js has placeholder values only
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# If you ever move to a build system
+node_modules/
+dist/
