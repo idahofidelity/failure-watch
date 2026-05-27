@@ -847,76 +847,70 @@ html, body {
 }
 
 /* ── MOBILE ──────────────────────────────────────────────── */
-#mobile-bar {
+#mobile-bar { display: none; }
+#sidebar-backdrop {
   display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 880;
 }
+#sidebar-backdrop.show { display: block; }
 
 @media (max-width: 700px) {
   :root { --header-height: 52px; }
 
-  /* Header */
   #header { padding: 0 12px; }
-  #site-title { font-size: 13px; letter-spacing: 0.03em; }
+  #site-title { font-size: 13px; }
   #iff-badge .iff-text { display: none; }
   #header-stats { display: none; }
   #header-right { display: none; }
 
-  /* App layout: stack vertically, map on top */
-  #app {
-    flex-direction: column;
-  }
+  /* Keep #app as row — sidebar overlays map, not stacked */
+  #app { flex-direction: row; }
 
-  /* Sidebar: hidden off-screen left, slides in as overlay */
+  /* Map fills everything */
+  #map-container { flex: 1; position: relative; }
+
+  /* Sidebar: fixed overlay, hidden off left edge */
   #sidebar {
-    position: fixed;
-    top: var(--header-height);
-    left: -105%;
-    bottom: 0;
-    width: 88vw;
-    max-width: 340px;
-    z-index: 900;
-    transition: left 0.25s ease;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.6);
-    height: calc(100vh - var(--header-height));
+    position: fixed !important;
+    top: var(--header-height) !important;
+    left: -110% !important;
+    bottom: 56px !important;
+    width: 88vw !important;
+    max-width: 340px !important;
+    height: auto !important;
+    z-index: 900 !important;
+    transition: left 0.25s ease !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.6) !important;
   }
 
-  #sidebar.open {
-    left: 0;
-  }
+  #sidebar.open { left: 0 !important; }
 
-  /* Sidebar filters: taller on mobile */
   #sidebar-filters {
-    height: 48vh !important;
-    max-height: 48vh !important;
+    height: 45vh !important;
+    max-height: 45vh !important;
   }
 
-  /* Map: full screen */
-  #map-container {
-    position: fixed;
-    top: var(--header-height);
-    left: 0; right: 0; bottom: 56px;
-    z-index: 1;
-  }
-
-  /* Detail panel: full screen bottom sheet */
+  /* Detail panel: bottom sheet */
   #detail-panel {
-    position: fixed;
+    position: fixed !important;
     top: auto !important;
-    bottom: 56px;
+    bottom: 56px !important;
     left: 0 !important;
     right: 0 !important;
     width: 100vw !important;
-    height: 65vh !important;
-    border-top: 2px solid var(--accent-gold);
-    border-left: none;
-    border-right: none;
-    z-index: 850;
+    height: 60vh !important;
+    border-top: 2px solid var(--accent-gold) !important;
+    border-left: none !important;
+    border-right: none !important;
+    z-index: 850 !important;
   }
 
-  /* Legend: hidden on mobile to save space */
   #map-legend { display: none; }
 
-  /* Mobile bottom bar */
+  /* Bottom tab bar */
   #mobile-bar {
     display: flex;
     position: fixed;
@@ -937,38 +931,23 @@ html, body {
     gap: 3px;
     background: none;
     border: none;
+    border-top: 2px solid transparent;
     color: var(--text-muted);
     font-family: var(--font-mono);
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     cursor: pointer;
-    transition: color 0.15s;
     -webkit-tap-highlight-color: transparent;
   }
 
   .mobile-tab.active {
     color: var(--accent-gold);
-    border-top: 2px solid var(--accent-gold);
+    border-top-color: var(--accent-gold);
   }
 
-  .mobile-tab-icon {
-    font-size: 18px;
-    line-height: 1;
-  }
-
-  /* Sidebar overlay backdrop */
-  #sidebar-backdrop {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 880;
-  }
-
-  #sidebar-backdrop.show { display: block; }
+  .mobile-tab-icon { font-size: 20px; line-height: 1; }
 }
-
 
 /* ── FINANCIAL IMPACT SECTION ────────────────────────────── */
 .dp-financial {
