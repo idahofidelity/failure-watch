@@ -348,7 +348,10 @@ function openDetailPanel(inc) {
 
   const financialHTML = buildFinancialRows(inc);
 
-  document.getElementById('dp-body').innerHTML = `
+  const dpBody = document.getElementById('dp-body');
+  dpBody.style.overflowY = 'scroll';
+  dpBody.style.webkitOverflowScrolling = 'touch';
+  dpBody.innerHTML = `
     <div class="dp-row">
       <span class="dp-badge" style="border-color:${causeCfg.color};color:${causeCfg.color}">${causeCfg.label || inc.cause}</span>
       <span class="dp-badge" style="border-color:${sevCfg.color};color:${sevCfg.color}">${sevCfg.label || inc.severity}</span>
@@ -549,3 +552,48 @@ function escapeHtml(str) {
   if (!str) return '';
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ── MOBILE NAV ────────────────────────────────────────────
+function mobileTab(tab) {
+  const sidebar = document.getElementById('sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  const tabs = document.querySelectorAll('.mobile-tab');
+
+  tabs.forEach(t => t.classList.remove('active'));
+
+  if (tab === 'filter' || tab === 'list') {
+    document.getElementById(`mob-${tab}`)?.classList.add('active');
+    sidebar.classList.add('open');
+    backdrop.classList.add('show');
+    // Scroll to list if list tab
+    if (tab === 'list') {
+      setTimeout(() => {
+        document.getElementById('incident-list')?.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    }
+  } else {
+    document.getElementById('mob-map')?.classList.add('active');
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  }
+}
+
+// Close sidebar when backdrop tapped
+document.getElementById('sidebar-backdrop')?.addEventListener('click', () => {
+  mobileTab('map');
+});
+
+// Close sidebar after selecting an incident on mobile
+const origSelect = selectIncident;
+// Patch selectIncident to close sidebar on mobile
+window.selectIncident = function(id) {
+  origSelect(id);
+  if (window.innerWidth <= 700) {
+    setTimeout(() => {
+      document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('sidebar-backdrop')?.classList.remove('show');
+      document.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('mob-map')?.classList.add('active');
+    }, 200);
+  }
+};
