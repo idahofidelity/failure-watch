@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Charts & Statistics | US Industrial Incident Tracker | IFF</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    body { overflow: auto; }
+    #charts-app {
+      position: relative;
+      top: var(--header-height);
+      min-height: calc(100vh - var(--header-height));
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .chart-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      padding: 20px;
+    }
+    .chart-card.full-width { grid-column: 1 / -1; }
+    .chart-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      letter-spacing: 0.06em;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .chart-subtitle {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+    .chart-canvas-wrap { position: relative; height: 280px; }
+    .chart-canvas-wrap.tall { height: 360px; }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-box {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-box-val {
+      font-family: var(--font-display);
+      font-size: 36px;
+      color: var(--accent-gold);
+      line-height: 1;
+    }
+    .stat-box-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+    }
+    .trend-up { color: #ff3b3b !important; }
+    .trend-down { color: #00c896 !important; }
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 32px;
+      letter-spacing: 0.06em;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .page-subtitle {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 20px;
+    }
+    .page-subtitle a {
+      color: var(--accent-gold);
+      text-decoration: none;
+    }
+    .coverage-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+    .coverage-table th {
+      text-align: left;
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .coverage-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .coverage-table tr:hover td { background: var(--bg-card); }
+    .badge-yes { color: #00c896; }
+    .badge-no  { color: var(--text-muted); }
+    @media (max-width: 700px) {
+      #charts-app { padding: 12px; }
+      .charts-grid { grid-template-columns: 1fr; }
+      .stat-box-val { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+
+<header id="header">
+  <div id="header-left">
+    <a id="iff-badge" href="https://idahofidelity.com" target="_blank" rel="noopener">
+      <span class="iff-eagle">🦅</span>
+      <div class="iff-text"><strong>IFF</strong>Idaho Fidelity Foundation</div>
+    </a>
+    <div id="site-title">US INDUSTRIAL <span>INCIDENT TRACKER</span></div>
+  </div>
+  <div id="header-right">
+    <a href="index.html" class="header-btn">🗺️ Map</a>
+    <a href="charts.html" class="header-btn" style="border-color:var(--accent-gold);color:var(--accent-gold)">📊 Charts</a>
+    <a href="https://idahofidelity.com" target="_blank" rel="noopener" class="header-btn">idahofidelity.com</a>
+  </div>
+</header>
+
+<div id="charts-app">
+  <div class="page-title">CHARTS & STATISTICS</div>
+  <div class="page-subtitle">
+    <a href="index.html">← Back to Map</a> &nbsp;·&nbsp;
+    US Industrial Incidents 2019–Present &nbsp;·&nbsp;
+    Idaho Fidelity Foundation
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="stats-row" id="summary-stats"></div>
+
+  <!-- Charts Grid -->
+  <div class="charts-grid">
+
+    <div class="chart-card full-width">
+      <div class="chart-title">INCIDENTS BY YEAR</div>
+      <div class="chart-subtitle">Total incidents recorded per year — increasing trend indicates worsening infrastructure</div>
+      <div class="chart-canvas-wrap"><canvas id="chart-by-year"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">INCIDENTS BY CAUSE</div>
+      <div class="chart-subtitle">Distribution of confirmed cause categories</div>
+      <div class="chart-canvas-wrap"><canvas id="chart-by-cause"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">INCIDENTS BY FACILITY TYPE</div>
+      <div class="chart-subtitle">Which infrastructure categories are failing most</div>
+      <div class="chart-canvas-wrap"><canvas id="chart-by-facility"></canvas></div>
+    </div>
+
+    <div class="chart-card full-width">
+      <div class="chart-title">FATALITIES & INJURIES BY YEAR</div>
+      <div class="chart-subtitle">Human cost trend over time</div>
+      <div class="chart-canvas-wrap"><canvas id="chart-casualties"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">INCIDENTS BY SEVERITY</div>
+      <div class="chart-subtitle">Catastrophic / Major / Moderate breakdown</div>
+      <div class="chart-canvas-wrap"><canvas id="chart-by-severity"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">PEOPLE DISPLACED BY YEAR</div>
+      <div class="chart-subtitle">Temporary + permanent displacement combined</div>
+      <div class="chart-canvas-wrap"><canvas id="chart-displaced"></canvas></div>
+    </div>
+
+    <div class="chart-card full-width">
+      <div class="chart-title">CONFIRMED FINANCIAL DAMAGE BY YEAR</div>
+      <div class="chart-subtitle">Infrastructure damage + cleanup costs (confirmed figures only, 2025 dollars)</div>
+      <div class="chart-canvas-wrap"><canvas id="chart-damage"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">TOP 10 STATES BY INCIDENTS</div>
+      <div class="chart-subtitle">Geographic concentration of industrial failures</div>
+      <div class="chart-canvas-wrap tall"><canvas id="chart-by-state"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">INCIDENTS BY MONTH</div>
+      <div class="chart-subtitle">Seasonal patterns across all years</div>
+      <div class="chart-canvas-wrap tall"><canvas id="chart-by-month"></canvas></div>
+    </div>
+
+    <div class="chart-card full-width">
+      <div class="chart-title">SOURCE COVERAGE GAP ANALYSIS</div>
+      <div class="chart-subtitle">How many incidents were caught by CSB, EPA, SpillTracker, Coalition — vs. only found via news scraping. Gaps reveal what official agencies and activist orgs miss.</div>
+      <div id="coverage-table-wrap" style="overflow-x:auto;margin-top:10px;"></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="data/incidents.js"></script>
+<script src="data/scraped_incidents.js" onerror="window.SCRAPED_INCIDENTS=[]"></script>
+<script>
+
+Chart.defaults.color = '#8b90a0';
+Chart.defaults.borderColor = '#2a2f3d';
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.font.size = 11;
+
+const CAUSE_COLORS = {
+  accidental: '#4a9eff',
+  intentional: '#ff3b3b',
+  under_investigation: '#ff8c00',
+  natural_cause: '#00c896',
+  unknown: '#a78bfa',
+};
+
+const FACILITY_COLORS = {
+  oil_refinery: '#ff6b35',
+  chemical_plant: '#ffd93d',
+  pipeline: '#4a9eff',
+  rail_tanker: '#a78bfa',
+  petrochemical_storage: '#ff8c00',
+  water_treatment: '#00c896',
+  bridge: '#c8a84b',
+  power_grid: '#ff3b3b',
+};
+
+const FACILITY_LABELS = {
+  oil_refinery: 'Oil Refinery',
+  chemical_plant: 'Chemical Plant',
+  pipeline: 'Pipeline',
+  rail_tanker: 'Rail Tanker',
+  petrochemical_storage: 'Petrochem Storage',
+  water_treatment: 'Water Treatment',
+  bridge: 'Bridge',
+  power_grid: 'Power/Grid',
+};
+
+// Merge seed + scraped
+const ALL_INCIDENTS = [
+  ...(typeof SEED_INCIDENTS !== 'undefined' ? SEED_INCIDENTS : []),
+  ...(typeof SCRAPED_INCIDENTS !== 'undefined' ? SCRAPED_INCIDENTS : []),
+].map(i => ({ ...i, year: parseInt((i.date||'2020').split('-')[0]), month: parseInt((i.date||'2020-01').split('-')[1]) }));
+
+// ── SUMMARY STATS ─────────────────────────────────────────
+function buildSummaryStats() {
+  const total = ALL_INCIDENTS.length;
+  const fatalities = ALL_INCIDENTS.reduce((s,i) => s + (i.fatalities||0), 0);
+  const injuries = ALL_INCIDENTS.reduce((s,i) => s + (i.injuries||0), 0);
+  const displaced = ALL_INCIDENTS.reduce((s,i) => s + (i.displaced_temp||0) + (i.displaced_perm||0), 0);
+  const intentional = ALL_INCIDENTS.filter(i => i.cause === 'intentional').length;
+  const damage = ALL_INCIDENTS.reduce((s,i) => {
+    return s + (i.infrastructure_damage?.adjusted||0) + (i.cleanup_cost?.adjusted||0);
+  }, 0);
+
+  const thisYear = new Date().getFullYear();
+  const lastYear = thisYear - 1;
+  const thisYearCount = ALL_INCIDENTS.filter(i => i.year === thisYear).length;
+  const lastYearCount = ALL_INCIDENTS.filter(i => i.year === lastYear).length;
+  const trend = lastYearCount > 0 ? Math.round(((thisYearCount - lastYearCount) / lastYearCount) * 100) : 0;
+  const trendClass = trend >= 0 ? 'trend-up' : 'trend-down';
+  const trendArrow = trend >= 0 ? '↑' : '↓';
+
+  const stats = [
+    { val: total, label: 'Total Incidents', extra: '' },
+    { val: fatalities, label: 'Total Fatalities', extra: '', color: '#ff3b3b' },
+    { val: injuries, label: 'Total Injuries', extra: '', color: '#ff6b35' },
+    { val: displaced.toLocaleString(), label: 'People Displaced', extra: '' },
+    { val: intentional, label: 'Intentional/Sabotage', extra: '', color: '#ff3b3b' },
+    { val: formatBig(damage), label: 'Confirmed Damage (2025$)', extra: '', color: '#c8a84b' },
+    { val: `${trendArrow}${Math.abs(trend)}%`, label: `${thisYear} vs ${lastYear}`, extra: '', color: trend >= 0 ? '#ff3b3b' : '#00c896' },
+  ];
+
+  const el = document.getElementById('summary-stats');
+  el.innerHTML = stats.map(s => `
+    <div class="stat-box">
+      <div class="stat-box-val" style="${s.color?`color:${s.color}`:'color:var(--accent-gold)'}">${s.val}</div>
+      <div class="stat-box-label">${s.label}</div>
+    </div>
+  `).join('');
+}
+
+function formatBig(n) {
+  if (!n) return '—';
+  if (n >= 1e12) return '$' + (n/1e12).toFixed(1) + 'T';
+  if (n >= 1e9)  return '$' + (n/1e9).toFixed(1) + 'B';
+  if (n >= 1e6)  return '$' + (n/1e6).toFixed(0) + 'M';
+  return '$' + n.toLocaleString();
+}
+
+// ── CHART HELPERS ─────────────────────────────────────────
+function countBy(key) {
+  const counts = {};
+  ALL_INCIDENTS.forEach(i => {
+    const v = i[key] || 'unknown';
+    counts[v] = (counts[v] || 0) + 1;
+  });
+  return counts;
+}
+
+function getYears() {
+  const years = [...new Set(ALL_INCIDENTS.map(i => i.year))].sort();
+  return years;
+}
+
+// ── BY YEAR ───────────────────────────────────────────────
+function buildByYear() {
+  const years = getYears();
+  const counts = years.map(y => ALL_INCIDENTS.filter(i => i.year === y).length);
+  new Chart(document.getElementById('chart-by-year'), {
+    type: 'bar',
+    data: {
+      labels: years,
+      datasets: [{
+        label: 'Incidents',
+        data: counts,
+        backgroundColor: years.map((y,i) => i === years.length-1 ? '#c8a84b' : '#4a9eff'),
+        borderColor: 'transparent',
+        borderRadius: 2,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y} incidents` } } },
+      scales: {
+        y: { grid: { color: '#2a2f3d' }, ticks: { color: '#8b90a0' } },
+        x: { grid: { display: false }, ticks: { color: '#8b90a0' } },
+      }
+    }
+  });
+}
+
+// ── BY CAUSE ──────────────────────────────────────────────
+function buildByCause() {
+  const counts = countBy('cause');
+  const labels = Object.keys(counts).map(k => ({
+    accidental: 'Accidental', intentional: 'Intentional', under_investigation: 'Under Investigation',
+    natural_cause: 'Natural Cause', unknown: 'Unknown',
+  }[k] || k));
+  new Chart(document.getElementById('chart-by-cause'), {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data: Object.values(counts), backgroundColor: Object.keys(counts).map(k => CAUSE_COLORS[k] || '#555'), borderColor: '#111318', borderWidth: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { padding: 12, boxWidth: 12 } } }
+    }
+  });
+}
+
+// ── BY FACILITY ───────────────────────────────────────────
+function buildByFacility() {
+  const counts = countBy('facility_type');
+  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  new Chart(document.getElementById('chart-by-facility'), {
+    type: 'bar',
+    data: {
+      labels: sorted.map(([k]) => FACILITY_LABELS[k] || k),
+      datasets: [{
+        label: 'Incidents',
+        data: sorted.map(([,v]) => v),
+        backgroundColor: sorted.map(([k]) => FACILITY_COLORS[k] || '#555'),
+        borderColor: 'transparent', borderRadius: 2,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: '#2a2f3d' }, ticks: { color: '#8b90a0' } },
+        y: { grid: { display: false }, ticks: { color: '#8b90a0' } },
+      }
+    }
+  });
+}
+
+// ── CASUALTIES ────────────────────────────────────────────
+function buildCasualties() {
+  const years = getYears();
+  new Chart(document.getElementById('chart-casualties'), {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [
+        { label: 'Fatalities', data: years.map(y => ALL_INCIDENTS.filter(i=>i.year===y).reduce((s,i)=>s+(i.fatalities||0),0)), borderColor: '#ff3b3b', backgroundColor: 'rgba(255,59,59,0.1)', tension: 0.3, fill: true, pointRadius: 4 },
+        { label: 'Injuries', data: years.map(y => ALL_INCIDENTS.filter(i=>i.year===y).reduce((s,i)=>s+(i.injuries||0),0)), borderColor: '#ff6b35', backgroundColor: 'rgba(255,107,53,0.1)', tension: 0.3, fill: true, pointRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { grid: { color: '#2a2f3d' }, ticks: { color: '#8b90a0' } },
+        x: { grid: { display: false }, ticks: { color: '#8b90a0' } },
+      }
+    }
+  });
+}
+
+// ── BY SEVERITY ───────────────────────────────────────────
+function buildBySeverity() {
+  const counts = countBy('severity');
+  new Chart(document.getElementById('chart-by-severity'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Catastrophic', 'Major', 'Moderate'],
+      datasets: [{ data: [counts.catastrophic||0, counts.major||0, counts.moderate||0], backgroundColor: ['#ff1a1a','#ff6b35','#ffd93d'], borderColor: '#111318', borderWidth: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { padding: 12, boxWidth: 12 } } }
+    }
+  });
+}
+
+// ── DISPLACED ─────────────────────────────────────────────
+function buildDisplaced() {
+  const years = getYears();
+  new Chart(document.getElementById('chart-displaced'), {
+    type: 'bar',
+    data: {
+      labels: years,
+      datasets: [
+        { label: 'Temp. Displaced', data: years.map(y => ALL_INCIDENTS.filter(i=>i.year===y).reduce((s,i)=>s+(i.displaced_temp||0),0)), backgroundColor: '#ff8c00', borderRadius: 2 },
+        { label: 'Perm. Displaced', data: years.map(y => ALL_INCIDENTS.filter(i=>i.year===y).reduce((s,i)=>s+(i.displaced_perm||0),0)), backgroundColor: '#ff3b3b', borderRadius: 2 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { color: '#8b90a0' } },
+        y: { stacked: true, grid: { color: '#2a2f3d' }, ticks: { color: '#8b90a0', callback: v => v.toLocaleString() } },
+      }
+    }
+  });
+}
+
+// ── DAMAGE ────────────────────────────────────────────────
+function buildDamage() {
+  const years = getYears();
+  const cleanup = years.map(y => ALL_INCIDENTS.filter(i=>i.year===y).reduce((s,i)=>s+(i.cleanup_cost?.adjusted||0),0));
+  const infra = years.map(y => ALL_INCIDENTS.filter(i=>i.year===y).reduce((s,i)=>s+(i.infrastructure_damage?.adjusted||0),0));
+  const econ = years.map(y => ALL_INCIDENTS.filter(i=>i.year===y).reduce((s,i)=>s+(i.economic_impact?.adjusted||0),0));
+  new Chart(document.getElementById('chart-damage'), {
+    type: 'bar',
+    data: {
+      labels: years,
+      datasets: [
+        { label: 'Cleanup Cost', data: cleanup, backgroundColor: '#4a9eff', borderRadius: 2 },
+        { label: 'Infrastructure Damage', data: infra, backgroundColor: '#ff6b35', borderRadius: 2 },
+        { label: 'Economic Impact', data: econ, backgroundColor: '#ffd93d', borderRadius: 2 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: $${(ctx.parsed.y/1e9).toFixed(1)}B` } } },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { color: '#8b90a0' } },
+        y: { stacked: true, grid: { color: '#2a2f3d' }, ticks: { color: '#8b90a0', callback: v => '$'+(v/1e9).toFixed(0)+'B' } },
+      }
+    }
+  });
+}
+
+// ── BY STATE ──────────────────────────────────────────────
+function buildByState() {
+  const counts = countBy('state');
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  new Chart(document.getElementById('chart-by-state'), {
+    type: 'bar',
+    data: {
+      labels: sorted.map(([k])=>k),
+      datasets: [{ label: 'Incidents', data: sorted.map(([,v])=>v), backgroundColor: '#c8a84b', borderColor: 'transparent', borderRadius: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: '#2a2f3d' }, ticks: { color: '#8b90a0' } },
+        y: { grid: { display: false }, ticks: { color: '#8b90a0' } },
+      }
+    }
+  });
+}
+
+// ── BY MONTH ──────────────────────────────────────────────
+function buildByMonth() {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const counts = months.map((_,i) => ALL_INCIDENTS.filter(inc => inc.month === i+1).length);
+  new Chart(document.getElementById('chart-by-month'), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{ label: 'Incidents', data: counts, backgroundColor: '#4a9eff', borderColor: 'transparent', borderRadius: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { grid: { color: '#2a2f3d' }, ticks: { color: '#8b90a0' } },
+        x: { grid: { display: false }, ticks: { color: '#8b90a0' } },
+      }
+    }
+  });
+}
+
+// ── COVERAGE GAP TABLE ────────────────────────────────────
+function buildCoverageTable() {
+  const rows = ALL_INCIDENTS.map(i => ({
+    name: i.name,
+    date: i.date,
+    csb: i.csb_investigated,
+    epa: i.epa_rmp,
+    spill: i.spilltracker_listed,
+    coalition: i.coalition_listed,
+    newsOnly: !i.csb_investigated && !i.epa_rmp && !i.spilltracker_listed && !i.coalition_listed,
+  })).sort((a,b) => new Date(b.date)-new Date(a.date));
+
+  const newsOnlyCount = rows.filter(r=>r.newsOnly).length;
+  const wrap = document.getElementById('coverage-table-wrap');
+  wrap.innerHTML = `
+    <p style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-bottom:10px;">
+      <span style="color:var(--accent-gold);font-weight:600">${newsOnlyCount}</span> of ${rows.length} incidents found only via news scraping — missed by all official trackers and activist orgs.
+    </p>
+    <table class="coverage-table">
+      <thead>
+        <tr>
+          <th>Incident</th><th>Date</th><th>CSB</th><th>EPA RMP</th><th>SpillTracker</th><th>Coalition</th><th>News Only</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.slice(0,30).map(r=>`
+          <tr>
+            <td>${r.name}</td>
+            <td>${r.date}</td>
+            <td class="${r.csb?'badge-yes':'badge-no'}">${r.csb?'✓':'—'}</td>
+            <td class="${r.epa?'badge-yes':'badge-no'}">${r.epa?'✓':'—'}</td>
+            <td class="${r.spill?'badge-yes':'badge-no'}">${r.spill?'✓':'—'}</td>
+            <td class="${r.coalition?'badge-yes':'badge-no'}">${r.coalition?'✓':'—'}</td>
+            <td style="color:${r.newsOnly?'#ff8c00':'var(--text-muted)'}">${r.newsOnly?'⚠ News Only':'—'}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <p style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-top:8px;">Showing most recent 30. <a href="index.html" style="color:var(--accent-gold)">View all on map →</a></p>
+  `;
+}
+
+// ── BUILD ALL ─────────────────────────────────────────────
+buildSummaryStats();
+buildByYear();
+buildByCause();
+buildByFacility();
+buildCasualties();
+buildBySeverity();
+buildDisplaced();
+buildDamage();
+buildByState();
+buildByMonth();
+buildCoverageTable();
+
+</script>
+</body>
+</html>
