@@ -1165,7 +1165,6 @@ const SEED_INCIDENTS = [
     description: "First confirmed drone-explosive attempt on US energy infrastructure. Man arrested. FBI investigation. Part of escalating national trend of grid attacks.",
     csb_investigated: false, spilltracker_listed: false, coalition_listed: false, epa_rmp: false,
   },
-];
 
   // ════════════════════════════════════════════════════════
   // 2010–2018 HISTORICAL INCIDENTS
