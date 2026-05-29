@@ -420,7 +420,7 @@ def scrape_google_news_rss():
     log.info("Scraping Google News RSS...")
     incidents = []
     seen_titles = set()
-    cutoff = datetime.now() - timedelta(days=14)  # Last 2 weeks
+    cutoff = datetime.now() - timedelta(days=14)  # 2 weeks for news; historical data in incidents.js goes to 2010  # Last 2 weeks
 
     for query in GNEWS_QUERIES:
         try:
@@ -683,6 +683,189 @@ def scrape_at_risk_facilities():
     return facilities
 
 
+
+
+def scrape_osha_violations():
+    """OSHA severe violator and chemical facility inspection failures"""
+    log.info("Scraping OSHA violations...")
+    incidents = []
+    try:
+        # OSHA IMIS inspection data API
+        url = "https://data.dol.gov/get/full_osha_inspection/rows/20/offset/0"
+        headers = {'Accept': 'application/json'}
+        r = requests.get(url, headers=headers, timeout=15)
+        if r.status_code == 200:
+            data = r.json()
+            for item in (data or [])[:30]:
+                name = item.get('estab_name', 'Unknown Facility')
+                city = item.get('city', 'Unknown')
+                state = item.get('state', 'US')
+                naics = str(item.get('naics_code', ''))
+                close_date = item.get('close_dt', '')
+                violation_type = item.get('safety_hlth', '')
+                num_violations = item.get('total_viol_cnt', 0)
+
+                # Only flag chemical/petroleum NAICS codes
+                relevant_naics = ['211', '212', '213', '324', '325', '331', '333', '486']
+                if not any(naics.startswith(n) for n in relevant_naics):
+                    continue
+
+                if int(num_violations or 0) == 0:
+                    continue
+
+                try:
+                    date = dateparser.parse(str(close_date)).strftime('%Y-%m-%d')
+                except:
+                    date = datetime.now().strftime('%Y-%m-%d')
+
+                lat, lng = geocode(city, state)
+
+                incidents.append({
+                    'id': make_id(name + city + date),
+                    'name': f"OSHA Inspection Failure: {name}",
+                    'date': date,
+                    'lat': lat, 'lng': lng,
+                    'city': city, 'state': state,
+                    'facility_type': detect_facility_type(name),
+                    'cause': 'under_investigation',
+                    'cause_detail': f"OSHA inspection found {num_violations} violations. Type: {violation_type}.",
+                    'severity': 'moderate',
+                    'injuries': 0, 'fatalities': 0,
+                    'displaced_temp': 0, 'displaced_perm': 0,
+                    'cleanup_cost': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
+                    'infrastructure_damage': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
+                    'economic_impact': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
+                    'description': f"OSHA inspection of {name} in {city}, {state} found {num_violations} violations.",
+                    'source_url': f"https://www.osha.gov/establishments/{name.replace(' ', '%20')}",
+                    'source': 'OSHA',
+                    'csb_investigated': False, 'spilltracker_listed': False,
+                    'coalition_listed': False, 'epa_rmp': False,
+                    'inspection_failure': True,
+                })
+                time.sleep(0.2)
+    except Exception as e:
+        log.error(f"OSHA scrape failed: {e}")
+    log.info(f"OSHA: {len(incidents)} inspection failures")
+    return incidents
+
+
+def scrape_phmsa_corrective_actions():
+    """PHMSA corrective action orders — facilities ordered to repair"""
+    log.info("Scraping PHMSA corrective actions...")
+    facilities = []
+    try:
+        # PHMSA enforcement database
+        url = "https://portal.phmsa.dot.gov/pipeline-security/api/enforcement/cao"
+        r = requests.get(url, timeout=15)
+        if r.status_code == 200:
+            data = r.json()
+            for item in (data.get('data', []) or [])[:30]:
+                name = item.get('operatorName', 'Unknown')
+                state = item.get('state', 'US')
+                city = item.get('city', 'Unknown')
+                date = item.get('issueDate', datetime.now().strftime('%Y-%m-%d'))
+                order_num = item.get('caoNumber', '')
+
+                try:
+                    date = dateparser.parse(str(date)).strftime('%Y-%m-%d')
+                except:
+                    date = datetime.now().strftime('%Y-%m-%d')
+
+                lat, lng = geocode(city, state)
+
+                facilities.append({
+                    'id': make_id(name + order_num),
+                    'name': name,
+                    'city': city, 'state': state,
+                    'lat': lat, 'lng': lng,
+                    'facility_type': 'pipeline',
+                    'year_built': None, 'age_years': None,
+                    'risk_status': 'accident_history',
+                    'risk_reason': f"PHMSA Corrective Action Order #{order_num} issued. Mandatory repairs required.",
+                    'source': 'PHMSA CAO',
+                    'inspection_status': 'corrective_action_ordered',
+                    'violations': 1,
+                    'repairs_planned': True,
+                    'last_incident': date,
+                })
+    except Exception as e:
+        log.error(f"PHMSA CAO scrape failed: {e}")
+
+    # Also check PHMSA warning letters
+    try:
+        wl_url = "https://portal.phmsa.dot.gov/pipeline-security/api/enforcement/wl"
+        r = requests.get(wl_url, timeout=15)
+        if r.status_code == 200:
+            data = r.json()
+            for item in (data.get('data', []) or [])[:20]:
+                name = item.get('operatorName', 'Unknown')
+                state = item.get('state', 'US')
+                date = item.get('issueDate', datetime.now().strftime('%Y-%m-%d'))
+                try:
+                    date = dateparser.parse(str(date)).strftime('%Y-%m-%d')
+                except:
+                    date = datetime.now().strftime('%Y-%m-%d')
+                lat, lng = geocode(name, state)
+                facilities.append({
+                    'id': make_id(name + 'wl' + date),
+                    'name': name,
+                    'city': 'Unknown', 'state': state,
+                    'lat': lat, 'lng': lng,
+                    'facility_type': 'pipeline',
+                    'year_built': None, 'age_years': None,
+                    'risk_status': 'accident_history',
+                    'risk_reason': f"PHMSA Warning Letter issued {date}. Safety violations identified.",
+                    'source': 'PHMSA Warning Letter',
+                    'inspection_status': 'warning_letter_issued',
+                    'violations': 1,
+                    'repairs_planned': False,
+                    'last_incident': date,
+                })
+    except Exception as e:
+        log.error(f"PHMSA warning letters failed: {e}")
+
+    log.info(f"PHMSA CAO/WL: {len(facilities)} facilities")
+    return facilities
+
+
+def scrape_sec_repair_filings():
+    """SEC EDGAR filings mentioning infrastructure repairs/upgrades for public companies"""
+    log.info("Scraping SEC repair filings...")
+    facilities = []
+    try:
+        # Use SEC EDGAR full-text search for recent 10-K/10-Q filings mentioning infrastructure repairs
+        keywords = ['pipeline repair', 'refinery upgrade', 'infrastructure repair mandatory',
+                    'consent order repair', 'EPA consent decree', 'corrective action plan']
+        for kw in keywords[:3]:  # Limit to avoid rate limiting
+            url = f"https://efts.sec.gov/LATEST/search-index?q=%22{requests.utils.quote(kw)}%22&dateRange=custom&startdt={datetime.now().strftime('%Y')}-01-01&forms=10-K,10-Q"
+            r = requests.get(url, timeout=15,
+                headers={'User-Agent': 'IFF-IncidentTracker/1.0 bot@idahofidelity.com'})
+            if r.status_code == 200:
+                data = r.json()
+                for hit in (data.get('hits', {}).get('hits', []) or [])[:5]:
+                    company = hit.get('_source', {}).get('entity_name', 'Unknown')
+                    filing_date = hit.get('_source', {}).get('file_date', datetime.now().strftime('%Y-%m-%d'))
+                    facilities.append({
+                        'id': make_id(company + filing_date + kw),
+                        'name': company,
+                        'city': 'Unknown', 'state': 'US',
+                        'lat': 39.5, 'lng': -98.3,
+                        'facility_type': detect_facility_type(company),
+                        'year_built': None, 'age_years': None,
+                        'risk_status': 'accident_history',
+                        'risk_reason': f"SEC filing mentions: {kw}. Filed {filing_date}.",
+                        'source': 'SEC EDGAR',
+                        'inspection_status': 'repair_disclosed',
+                        'violations': 0,
+                        'repairs_planned': True,
+                        'last_incident': filing_date,
+                    })
+            time.sleep(1)
+    except Exception as e:
+        log.error(f"SEC EDGAR scrape failed: {e}")
+    log.info(f"SEC filings: {len(facilities)} facilities")
+    return facilities
+
 def deduplicate(incidents):
     """Remove near-duplicate incidents by title similarity and date proximity"""
     seen = {}
@@ -740,6 +923,7 @@ def main():
     all_incidents += scrape_nrc()
     all_incidents += scrape_epa_echo()
     all_incidents += scrape_google_news_rss()
+    all_incidents += scrape_osha_violations()
 
     # Deduplicate
     all_incidents = deduplicate(all_incidents)
@@ -750,6 +934,8 @@ def main():
 
     # Scrape at-risk facilities
     facilities = scrape_at_risk_facilities()
+    facilities += scrape_phmsa_corrective_actions()
+    facilities += scrape_sec_repair_filings()
 
     write_js(new_incidents, facilities)
     log.info("=== Scraper Complete ===")

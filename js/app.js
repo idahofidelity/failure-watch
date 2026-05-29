@@ -81,12 +81,12 @@ function initFilters() {
   const toEl = document.getElementById('year-to');
   const curYear = new Date().getFullYear();
   [fromEl, toEl].forEach(el => {
-    for (let y = 2019; y <= curYear; y++) {
+    for (let y = 2010; y <= curYear; y++) {
       const opt = document.createElement('option');
       opt.value = y; opt.textContent = y; el.appendChild(opt);
     }
   });
-  fromEl.value = 2019; toEl.value = curYear;
+  fromEl.value = 2010; toEl.value = curYear;
   fromEl.addEventListener('change', () => { state.filters.yearFrom = +fromEl.value; renderAll(); });
   toEl.addEventListener('change', () => { state.filters.yearTo = +toEl.value; renderAll(); });
 
