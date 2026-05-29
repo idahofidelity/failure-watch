@@ -608,3 +608,128 @@ window.selectIncident = function(id) {
     }, 200);
   }
 };
+
+// ── AT-RISK FACILITIES LAYER ──────────────────────────────
+const atRiskState = {
+  markers: [],
+  visible: { aging: true, critical: true, violations: true, repairs: true },
+};
+
+const RISK_CONFIG = {
+  aging_watch:    { color: '#ff8c00', label: 'Aging (30-50yr)',  icon: '⚠' },
+  aging_moderate: { color: '#ff6b35', label: 'Aging (35-50yr)',  icon: '⚠' },
+  aging_critical: { color: '#ff1a1a', label: 'Critical (50yr+)', icon: '🔴' },
+  accident_history: { color: '#ffd93d', label: 'Accident History', icon: '⚡' },
+  rmp_filed:      { color: '#ffd93d', label: 'EPA Violations',   icon: '⚡' },
+};
+
+function getRiskCategory(f) {
+  if (f.risk_status === 'aging_critical') return 'critical';
+  if (f.risk_status === 'aging_moderate' || f.risk_status === 'aging_watch') return 'aging';
+  if (f.violations > 0 || f.risk_status === 'accident_history') return 'violations';
+  if (f.repairs_planned) return 'repairs';
+  return 'aging';
+}
+
+function getAtRiskSVG(riskStatus, facilityType, age) {
+  const cfg = RISK_CONFIG[riskStatus] || RISK_CONFIG['aging_watch'];
+  const color = cfg.color;
+  const isCritical = riskStatus === 'aging_critical';
+  const s = isCritical ? 20 : 16;
+  const c = s / 2;
+  // Cracked/broken lightning bolt for critical, faded for moderate
+  const opacity = riskStatus === 'aging_watch' ? 0.5 : riskStatus === 'aging_moderate' ? 0.7 : 1.0;
+  return `<svg width="${s}" height="${s}" xmlns="http://www.w3.org/2000/svg" opacity="${opacity}">
+    <polygon points="${c},2 ${Math.round(c*0.4)},${c} ${c},${c} ${Math.round(c*0.6)},${s-2} ${s-2},${c} ${c+2},${c}"
+      fill="${color}" stroke="#0a0c0f" stroke-width="1.5"
+      stroke-dasharray="${isCritical ? '0' : '2,1'}"/>
+    ${isCritical ? `<line x1="${c-2}" y1="4" x2="${c+1}" y2="${c-1}" stroke="#0a0c0f" stroke-width="1.5"/>` : ''}
+  </svg>`;
+}
+
+function renderAtRiskLayer() {
+  // Clear existing at-risk markers
+  atRiskState.markers.forEach(m => map.removeLayer(m));
+  atRiskState.markers = [];
+
+  const facilities = (typeof AT_RISK_FACILITIES !== 'undefined') ? AT_RISK_FACILITIES : [];
+  if (!facilities.length) return;
+
+  facilities.forEach(f => {
+    const cat = getRiskCategory(f);
+    if (!atRiskState.visible[cat]) return;
+
+    const svg = getAtRiskSVG(f.risk_status, f.facility_type, f.age_years);
+    const s = f.risk_status === 'aging_critical' ? 20 : 16;
+    const icon = L.divIcon({ html: svg, className: '', iconSize: [s, s], iconAnchor: [s/2, s/2] });
+    const marker = L.marker([f.lat, f.lng], { icon, zIndexOffset: -100 });
+
+    marker.bindTooltip(`
+      <div style="font-family:var(--font-mono);font-size:11px;">
+        <strong style="color:#ff6b35">⚠ AT RISK: ${f.name}</strong><br>
+        ${f.city}, ${f.state}<br>
+        <span style="color:${RISK_CONFIG[f.risk_status]?.color||'#ff8c00'}">${f.risk_reason}</span><br>
+        <span style="color:#888">Source: ${f.source}</span>
+      </div>
+    `, { sticky: true });
+
+    marker.on('click', () => showAtRiskPanel(f));
+    marker.addTo(map);
+    atRiskState.markers.push(marker);
+  });
+}
+
+function showAtRiskPanel(f) {
+  const panel = document.getElementById('detail-panel');
+  const cfg = RISK_CONFIG[f.risk_status] || {};
+  document.getElementById('dp-title').textContent = f.name;
+  const dpBody = document.getElementById('dp-body');
+  dpBody.style.overflowY = 'scroll';
+  dpBody.style.webkitOverflowScrolling = 'touch';
+  dpBody.innerHTML = `
+    <div class="dp-row">
+      <span class="dp-badge" style="border-color:${cfg.color||'#ff8c00'};color:${cfg.color||'#ff8c00'}">
+        ⚠ ${cfg.label || f.risk_status}
+      </span>
+    </div>
+    <div style="font-family:var(--font-mono);font-size:11px;color:var(--text-muted);margin-bottom:12px;">
+      ${f.city}, ${f.state} · ${f.facility_type?.replace(/_/g,' ')} · Source: ${f.source}
+    </div>
+    ${f.age_years ? `
+    <div class="dp-stat-grid">
+      <div class="dp-stat"><div class="dp-stat-val" style="color:${cfg.color}">${f.age_years}</div><div class="dp-stat-label">Years Old</div></div>
+      <div class="dp-stat"><div class="dp-stat-val">${f.year_built || '—'}</div><div class="dp-stat-label">Year Built</div></div>
+      <div class="dp-stat"><div class="dp-stat-val" style="color:${f.violations>0?'#ff3b3b':'var(--text-muted)'}">${f.violations||0}</div><div class="dp-stat-label">Violations</div></div>
+    </div>` : ''}
+    <div class="dp-section-title">Risk Assessment</div>
+    <p class="dp-desc">${f.risk_reason}</p>
+    ${f.repairs_planned ? '<p class="dp-desc" style="color:#a78bfa;margin-top:8px">🔧 Repairs or upgrades are planned for this facility.</p>' : ''}
+    <div class="dp-section-title">Inspection Status</div>
+    <p class="dp-desc" style="text-transform:capitalize">${(f.inspection_status||'unknown').replace(/_/g,' ')}</p>
+    <div class="dp-section-title" style="margin-top:12px">Note</div>
+    <p class="dp-desc" style="color:var(--text-muted);font-size:11px">
+      This facility has not necessarily had an incident. It appears on the at-risk layer because it meets aging, inspection, or violation criteria from ${f.source}.
+    </p>
+  `;
+  panel.classList.add('open');
+  map.flyTo([f.lat, f.lng], 9, { duration: 1 });
+}
+
+// Hook at-risk toggles
+document.querySelectorAll('#atrisk-toggles .ftoggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.atrisk;
+    atRiskState.visible[key] = !atRiskState.visible[key];
+    btn.classList.toggle('active');
+    renderAtRiskLayer();
+  });
+});
+
+// Load scraped incidents into state
+if (typeof SCRAPED_INCIDENTS !== 'undefined' && SCRAPED_INCIDENTS.length) {
+  state.incidents = [...state.incidents, ...SCRAPED_INCIDENTS];
+  renderAll();
+}
+
+// Render at-risk layer on load
+renderAtRiskLayer();
