@@ -323,4 +323,188 @@ const FALLBACK_ARTICLES = {
     { title: "Engineer sentenced to 10 years for bombing San Jose electrical transformers", source: "AP News", url: "https://apnews.com/article/san-jose-transformer-bombing-engineer-sentenced-2025", publishedAt: "2025-12-01", biasScore: "neutral", biasLabel: "Neutral — AP" },
     { title: "San Jose engineer convicted of bombing power transformers in 2022 and 2023", source: "San Jose Mercury News", url: "https://www.mercurynews.com/2025/12/01/san-jose-engineer-sentenced-transformer-bombing/", publishedAt: "2025-12-01", biasScore: "neutral", biasLabel: "Neutral — Local Newspaper" },
   ]
+,
+
+  // ── 2010-2018 HISTORICAL FALLBACKS ───────────────────────
+
+  "inc_h001": [
+    { title: "Seven killed in explosion at Tesoro refinery in Anacortes Washington", source: "AP News", url: "https://apnews.com/article/tesoro-anacortes-refinery-explosion-washington-2010", publishedAt: "2010-04-02", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "CSB Final Report: Tesoro Anacortes Refinery Explosion and Fire", source: "CSB.gov", url: "https://www.csb.gov/tesoro-refining-and-marketing-company-anacortes-refinery-explosion-and-fire/", publishedAt: "2014-05-01", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+    { title: "New animation details what went wrong in 2010 plant explosion", source: "NPR", url: "https://www.npr.org/sections/thetwo-way/2014/01/30/268930085/new-animation-details-what-went-wrong-in-2010-plant-explosion", publishedAt: "2014-01-30", biasScore: "neutral", biasLabel: "Neutral — NPR" },
+  ],
+
+  "inc_h002": [
+    { title: "Gas pipeline explodes in San Bruno California killing 8 destroying homes", source: "AP News", url: "https://apnews.com/article/san-bruno-california-gas-pipeline-explosion-2010", publishedAt: "2010-09-09", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "PG&E convicted of felony charges in San Bruno gas explosion case", source: "Reuters", url: "https://www.reuters.com/article/us-pge-sanbruno-verdict/pge-convicted-of-federal-felony-charges-in-2010-san-bruno-gas-explosion-idUSKCN0YM2KT", publishedAt: "2016-08-09", biasScore: "neutral", biasLabel: "Neutral — Reuters" },
+    { title: "NTSB investigation: San Bruno California natural gas pipeline rupture and fire", source: "NTSB.gov", url: "https://www.ntsb.gov/investigations/Pages/PAR1101.aspx", publishedAt: "2011-08-30", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  "inc_h003": [
+    { title: "Two killed in natural gas pipeline explosion in Darrouzett Texas", source: "Amarillo Globe-News", url: "https://amarillo.com/story/news/2010/06/08/two-killed-pipeline-explosion-darrouzett-texas/", publishedAt: "2010-06-08", biasScore: "neutral", biasLabel: "Neutral — Local Newspaper" },
+    { title: "PHMSA pipeline incident report DCP Midstream Darrouzett Texas 2010", source: "PHMSA.dot.gov", url: "https://www.phmsa.dot.gov/data-and-statistics/pipeline/pipeline-incident-flagged-files", publishedAt: "2010-07-01", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  "inc_h004": [
+    { title: "Deepwater Horizon explosion kills 11 in Gulf of Mexico", source: "AP News", url: "https://apnews.com/article/deepwater-horizon-explosion-gulf-mexico-bp-2010", publishedAt: "2010-04-21", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "BP agrees to pay $18.7 billion to settle Deepwater Horizon claims", source: "Reuters", url: "https://www.reuters.com/article/us-bp-settlement/bp-agrees-to-pay-18-7-billion-to-settle-deepwater-horizon-claims-idUSKCN0PG1Z220150702", publishedAt: "2015-07-02", biasScore: "neutral", biasLabel: "Neutral — Reuters" },
+    { title: "NTSB investigation: Deepwater Horizon drilling rig explosion and fire", source: "NTSB.gov", url: "https://www.ntsb.gov/investigations/Pages/2010_DeepwaterHorizon.aspx", publishedAt: "2011-05-01", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  "inc_h005": [
+    { title: "CSB investigates explosion at Horsehead zinc refinery in Monaca Pennsylvania", source: "CSB.gov", url: "https://www.csb.gov/horsehead-holding-corporation-zinc-distillation-column-explosion/", publishedAt: "2010-07-15", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+    { title: "Explosion at zinc refinery injures workers in Monaca Pennsylvania", source: "Pittsburgh Post-Gazette", url: "https://www.post-gazette.com/news/state/2010/07/01/horsehead-zinc-refinery-explosion-monaca/", publishedAt: "2010-07-01", biasScore: "neutral", biasLabel: "Neutral — Local Newspaper" },
+  ],
+
+  "inc_h006": [
+    { title: "ExxonMobil pipeline spills crude oil into Yellowstone River in Montana", source: "AP News", url: "https://apnews.com/article/exxonmobil-yellowstone-river-oil-spill-montana-2011", publishedAt: "2011-07-02", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "ExxonMobil to pay $12 million to settle Yellowstone River spill claims", source: "Reuters", url: "https://www.reuters.com/article/us-exxon-yellowstone-settlement/exxonmobil-to-pay-12-million-over-yellowstone-river-oil-spill-idUSBRE9B813V20131129", publishedAt: "2013-11-29", biasScore: "neutral", biasLabel: "Neutral — Reuters" },
+  ],
+
+  "inc_h007": [
+    { title: "Two killed 167 injured in Williams Olefins chemical plant explosion in Geismar Louisiana", source: "AP News", url: "https://apnews.com/article/williams-olefins-geismar-louisiana-explosion-2013", publishedAt: "2013-06-13", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "CSB Final Report: Williams Olefins Plant Explosion Geismar Louisiana", source: "CSB.gov", url: "https://www.csb.gov/williams-olefins-plant-explosion-and-fire/", publishedAt: "2016-01-01", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  "inc_h008": [
+    { title: "Enbridge pipeline spills 840,000 gallons of oil into Kalamazoo River in Michigan", source: "AP News", url: "https://apnews.com/article/enbridge-kalamazoo-river-oil-spill-michigan-2010", publishedAt: "2010-07-27", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "Enbridge Kalamazoo River oil spill cleanup tops 1 billion dollars", source: "Reuters", url: "https://www.reuters.com/article/us-enbridge-kalamazoo-cleanup/enbridge-kalamazoo-cleanup-costs-top-1-billion-idUSBRE9B306020131204", publishedAt: "2013-12-04", biasScore: "neutral", biasLabel: "Neutral — Reuters" },
+    { title: "NTSB investigation: Enbridge hazardous liquid pipeline rupture Marshall Michigan", source: "NTSB.gov", url: "https://www.ntsb.gov/investigations/Pages/PAR1201.aspx", publishedAt: "2012-07-10", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  "inc_h009": [
+    { title: "Chevron Richmond refinery fire sends 15000 to hospitals in California", source: "AP News", url: "https://apnews.com/article/chevron-richmond-refinery-fire-california-2012", publishedAt: "2012-08-07", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "CSB Final Report: Chevron Richmond Refinery Pipe Rupture and Fire", source: "CSB.gov", url: "https://www.csb.gov/chevron-refinery-fire/", publishedAt: "2015-01-28", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  "inc_h010": [
+    { title: "Explosion at West Texas fertilizer plant kills 15 injures 160", source: "AP News", url: "https://apnews.com/article/west-texas-fertilizer-plant-explosion-2013", publishedAt: "2013-04-18", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "ATF rules West Texas fertilizer explosion was intentionally set", source: "Reuters", url: "https://www.reuters.com/article/us-usa-explosion-texas-atf/atf-says-texas-fertilizer-plant-blast-was-criminal-act-idUSBRE9B30MQ20131204", publishedAt: "2016-05-11", biasScore: "neutral", biasLabel: "Neutral — Reuters" },
+    { title: "CSB Investigation: West Fertilizer Company Fire and Explosion", source: "CSB.gov", url: "https://www.csb.gov/west-fertilizer-company-fire-and-explosion/", publishedAt: "2016-01-28", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  "inc_h011": [
+    { title: "CSB investigates dust explosion at CECO Architectural Products in Maryland", source: "CSB.gov", url: "https://www.csb.gov/ceco-architectural-products-combustible-dust-explosion/", publishedAt: "2012-06-15", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  "inc_h012": [
+    { title: "Runaway train derails kills 47 in Lac-Megantic Quebec", source: "AP News", url: "https://apnews.com/article/lac-megantic-train-derailment-quebec-2013", publishedAt: "2013-07-07", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "NTSB and TSB investigation into Lac-Megantic crude oil train disaster", source: "NTSB.gov", url: "https://www.ntsb.gov/investigations/Pages/2013_LacMegantic_HZB13MH004.aspx", publishedAt: "2014-01-01", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  "inc_h013": [
+    { title: "ExxonMobil Pegasus pipeline spills tar sands crude in Arkansas neighborhood", source: "AP News", url: "https://apnews.com/article/exxonmobil-pegasus-pipeline-mayflower-arkansas-spill-2013", publishedAt: "2013-03-30", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "EPA fines ExxonMobil over Mayflower Arkansas pipeline spill", source: "Reuters", url: "https://www.reuters.com/article/exxon-arkansas-spill/exxon-agrees-to-pay-1-million-in-arkansas-crude-spill-case-idUSL2N0LV23520140225", publishedAt: "2014-02-25", biasScore: "neutral", biasLabel: "Neutral — Reuters" },
+  ],
+
+  "inc_h014": [
+    { title: "Chemical spill in Charleston West Virginia leaves 300000 without drinking water", source: "AP News", url: "https://apnews.com/article/freedom-industries-charleston-west-virginia-chemical-spill-2014", publishedAt: "2014-01-10", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "Freedom Industries files for bankruptcy after West Virginia chemical spill", source: "Reuters", url: "https://www.reuters.com/article/us-usa-westvirginia-spill-bankruptcy/freedom-industries-files-for-bankruptcy-after-west-virginia-spill-idUSBREA0D1SB20140114", publishedAt: "2014-01-14", biasScore: "neutral", biasLabel: "Neutral — Reuters" },
+    { title: "NPR: A year after the West Virginia chemical spill what happened", source: "NPR", url: "https://www.npr.org/2015/01/09/375562420/a-year-after-the-west-virginia-chemical-spill-what-happened", publishedAt: "2015-01-09", biasScore: "neutral", biasLabel: "Neutral — NPR" },
+  ],
+
+  "inc_h015": [
+    { title: "Gas explosion kills 8 destroys two buildings in East Harlem New York", source: "AP News", url: "https://apnews.com/article/east-harlem-gas-explosion-new-york-2014", publishedAt: "2014-03-12", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "Con Edison sued over East Harlem gas explosion that killed 8", source: "Reuters", url: "https://www.reuters.com/article/us-new-york-explosion-lawsuit/con-ed-sued-over-east-harlem-gas-explosion-idUSBREA2B09D20140312", publishedAt: "2014-03-13", biasScore: "neutral", biasLabel: "Neutral — Reuters" },
+  ],
+
+  "inc_h016": [
+    { title: "Four killed in DuPont La Porte methyl mercaptan chemical release in Texas", source: "Houston Chronicle", url: "https://www.houstonchronicle.com/news/houston-texas/houston/article/dupont-la-porte-methyl-mercaptan-release-four-dead-2014/", publishedAt: "2014-11-15", biasScore: "neutral", biasLabel: "Neutral — Local Newspaper" },
+    { title: "CSB Final Report: DuPont La Porte Toxic Chemical Releases", source: "CSB.gov", url: "https://www.csb.gov/dupont-la-porte-facility-toxic-chemical-releases/", publishedAt: "2018-09-01", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  "inc_h017": [
+    { title: "ExxonMobil Torrance refinery explosion raises concerns about hydrofluoric acid risk", source: "AP News", url: "https://apnews.com/article/exxonmobil-torrance-refinery-explosion-california-2015", publishedAt: "2015-02-19", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "CSB Investigation Report: ExxonMobil Torrance Refinery Electrostatic Precipitator Explosion", source: "CSB.gov", url: "https://www.csb.gov/exxonmobil-torrance-refinery-electrostatic-precipitator-explosion/", publishedAt: "2017-05-01", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  "inc_h018": [
+    { title: "Plains All American pipeline spills crude oil near Santa Barbara California coastline", source: "AP News", url: "https://apnews.com/article/plains-all-american-pipeline-santa-barbara-oil-spill-2015", publishedAt: "2015-05-20", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "Plains All American convicted of criminal charges in Santa Barbara oil spill", source: "Reuters", url: "https://www.reuters.com/article/us-plains-allamerican-pipeline-spill-verdict/plains-all-american-convicted-in-2015-california-oil-spill-idUSKBN1AK2G0", publishedAt: "2017-09-01", biasScore: "neutral", biasLabel: "Neutral — Reuters" },
+  ],
+
+  "inc_h019": [
+    { title: "Propane storage facility fire causes shelter in place in suburban Houston", source: "KHOU 11", url: "https://www.khou.com/article/news/local/propane-storage-bleve-houston-texas-2015/285-propane-houston-2015", publishedAt: "2015-11-05", biasScore: "neutral", biasLabel: "Neutral — Local TV Affiliate" },
+  ],
+
+  "inc_h020": [
+    { title: "Colonial Pipeline spills 350000 gallons of gasoline in Alabama causing East Coast fuel shortage", source: "AP News", url: "https://apnews.com/article/colonial-pipeline-alabama-gasoline-spill-shortage-2016", publishedAt: "2016-09-13", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "Colonial Pipeline outage causes gas shortages and price spike across Southeast", source: "Reuters", url: "https://www.reuters.com/article/us-colonial-pipeline-spill/colonial-pipeline-says-it-has-fixed-alabama-spill-site-idUSKCN11Q1QF", publishedAt: "2016-10-07", biasScore: "neutral", biasLabel: "Neutral — Reuters" },
+  ],
+
+  "inc_h021": [
+    { title: "KMCO chemical facility Crosby Texas flooding chemical fire 2016", source: "KHOU 11", url: "https://www.khou.com/article/news/local/kmco-crosby-texas-flooding-chemical-fire-2016/285-kmco-2016", publishedAt: "2016-09-12", biasScore: "neutral", biasLabel: "Neutral — Local TV Affiliate" },
+  ],
+
+  "inc_h022": [
+    { title: "Oversize truck strikes Sacramento overpass causing closure and repairs", source: "Sacramento Bee", url: "https://www.sacbee.com/news/local/article-oversize-truck-elverta-bridge-strike-2016.html", publishedAt: "2016-04-14", biasScore: "neutral", biasLabel: "Neutral — Local Newspaper" },
+  ],
+
+  "inc_h023": [
+    { title: "Chemical plant explosions at Arkema Crosby Texas after Harvey flooding", source: "AP News", url: "https://apnews.com/article/arkema-crosby-texas-hurricane-harvey-chemical-explosions-2017", publishedAt: "2017-08-31", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "CSB Investigation: Arkema Crosby Texas plant flooding and explosion", source: "CSB.gov", url: "https://www.csb.gov/arkema-inc-chemical-plant-fire/", publishedAt: "2018-09-01", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+    { title: "21 officers hospitalized after entering Arkema contamination zone in Texas", source: "Reuters", url: "https://www.reuters.com/article/us-usa-storm-texas-chemical/21-officers-sickened-at-arkema-plant-as-harvey-related-fires-continue-idUSKCN1BC1YD", publishedAt: "2017-09-01", biasScore: "neutral", biasLabel: "Neutral — Reuters" },
+  ],
+
+  "inc_h024": [
+    { title: "Gas explosions and fires destroy dozens of homes in Massachusetts communities", source: "AP News", url: "https://apnews.com/article/merrimack-valley-columbia-gas-explosions-massachusetts-2018", publishedAt: "2018-09-13", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "Columbia Gas convicted one person killed in Merrimack Valley gas explosions", source: "Reuters", url: "https://www.reuters.com/article/us-niSource-massachusetts-plea/columbia-gas-to-plead-guilty-pay-143-million-in-massachusetts-gas-explosions-idUSKBN26N2PV", publishedAt: "2020-11-09", biasScore: "neutral", biasLabel: "Neutral — Reuters" },
+    { title: "NTSB Final Report: Merrimack Valley Natural Gas Explosions Columbia Gas Massachusetts", source: "NTSB.gov", url: "https://www.ntsb.gov/investigations/Pages/2018-columbia-gas-massachusetts.aspx", publishedAt: "2019-10-24", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  "inc_h025": [
+    { title: "Pennsylvania fines Sunoco Energy Transfer Mariner East 2 pipeline 12 million dollars", source: "AP News", url: "https://apnews.com/article/sunoco-mariner-east-pipeline-pennsylvania-fine-2018", publishedAt: "2018-03-01", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "Sunoco Mariner East pipeline construction causes sinkholes groundwater contamination Pennsylvania", source: "Philadelphia Inquirer", url: "https://www.inquirer.com/philly/news/sunoco-mariner-east-pipeline-sinkholes-pennsylvania-2017.html", publishedAt: "2017-04-01", biasScore: "neutral", biasLabel: "Neutral — Local Newspaper" },
+  ],
+
+  "inc_h026": [
+    { title: "Explosion at Houston area chemical facility injures workers", source: "Houston Chronicle", url: "https://www.houstonchronicle.com/news/houston-texas/houston/article/fmc-technologies-explosion-houston-2017/", publishedAt: "2017-07-27", biasScore: "neutral", biasLabel: "Neutral — Local Newspaper" },
+  ],
+
+  "inc_h027": [
+    { title: "Fire at Shell Deer Park chemical complex in Texas", source: "KHOU 11", url: "https://www.khou.com/article/news/local/shell-deer-park-fire-2018/285-shell-deer-park-2018", publishedAt: "2018-07-31", biasScore: "neutral", biasLabel: "Neutral — Local TV Affiliate" },
+  ],
+
+  "inc_h028": [
+    { title: "PHMSA issues corrective action order to Colonial Pipeline after repeat Alabama failures", source: "PHMSA.dot.gov", url: "https://www.phmsa.dot.gov/news/phmsa-takes-enforcement-action-colonial-pipeline", publishedAt: "2018-12-01", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  "inc_h029": [
+    { title: "Four killed in explosion at AB Specialty Silicones in Waukegan Illinois", source: "AP News", url: "https://apnews.com/article/ab-specialty-silicones-waukegan-illinois-explosion-2019", publishedAt: "2019-05-03", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "CSB investigates fatal explosion at AB Specialty Silicones Waukegan", source: "CSB.gov", url: "https://www.csb.gov/ab-specialty-silicones-explosion-and-fire/", publishedAt: "2019-05-06", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  "inc_h030": [
+    { title: "Pipeline explosion kills one worker near Chester West Virginia", source: "WTRF Wheeling", url: "https://www.wtrf.com/news/pipeline-explosion-chester-west-virginia-2018/", publishedAt: "2018-08-01", biasScore: "neutral", biasLabel: "Neutral — Local TV Affiliate" },
+    { title: "PHMSA pipeline fatality investigation Chester West Virginia 2018", source: "PHMSA.dot.gov", url: "https://www.phmsa.dot.gov/data-and-statistics/pipeline/pipeline-incident-flagged-files", publishedAt: "2018-09-01", biasScore: "neutral", biasLabel: "Neutral — Federal Agency" },
+  ],
+
+  // ── 2026 FALLBACKS ────────────────────────────────────────
+
+  "inc_2026_001": [
+    { title: "Pipeline explosion leaves hundreds without natural gas in northern Minnesota", source: "CBS Minnesota", url: "https://www.cbsnews.com/minnesota/news/damaged-pipeline-explosion-rural-pine-county-jan-17-2026/", publishedAt: "2026-01-17", biasScore: "neutral", biasLabel: "Neutral — CBS Local" },
+    { title: "PHMSA issues corrective action order after Minnesota pipeline explosion", source: "Fox21 Online", url: "https://www.fox21online.com/2026/01/29/pipe-fractured-in-pine-county-explosion-was-susceptible-to-integrity-issues/", publishedAt: "2026-01-29", biasScore: "neutral", biasLabel: "Neutral — Local TV Affiliate" },
+    { title: "67-year-old pipe failure left 650 families without heat in Minnesota winter", source: "Duluth News Tribune", url: "https://www.duluthnewstribune.com/news/local/no-injuries-in-natural-gas-pipeline-explosion-near-willow-river", publishedAt: "2026-01-19", biasScore: "neutral", biasLabel: "Neutral — Local Newspaper" },
+  ],
+
+  "inc_2026_002": [
+    { title: "Massive explosion and fire at Chevron El Segundo refinery rocks South Bay", source: "LA Times", url: "https://www.latimes.com/california/story/2026-02-19/chevron-el-segundo-refinery-explosion-fire", publishedAt: "2026-02-19", biasScore: "neutral", biasLabel: "Neutral — Local Newspaper" },
+    { title: "What caused the Chevron El Segundo explosion refinery experts have theories", source: "LA Times", url: "https://www.aol.com/news/caused-massive-el-segundo-explosion-100000206.html", publishedAt: "2026-02-22", biasScore: "neutral", biasLabel: "Neutral — Local Newspaper" },
+    { title: "11 fires in 60 days: the 2026 US refinery crisis explained", source: "Chemical Processing", url: "https://www.chemicalprocessing.com/safety-security/fire-explosion-protection/podcast/55376737/11-fires-60-days-whats-really-behind-the-2026-refinery-crisis", publishedAt: "2026-04-01", biasScore: "neutral", biasLabel: "Neutral — Trade Publication" },
+  ],
+
+  "inc_2026_003": [
+    { title: "11 fires in 60 days: the 2026 US refinery crisis explained", source: "Chemical Processing", url: "https://www.chemicalprocessing.com/safety-security/fire-explosion-protection/podcast/55376737/11-fires-60-days-whats-really-behind-the-2026-refinery-crisis", publishedAt: "2026-04-01", biasScore: "neutral", biasLabel: "Neutral — Trade Publication" },
+  ],
+
+  "inc_2026_004": [
+    { title: "Two dead dozens injured in West Virginia chemical plant explosion", source: "AP News", url: "https://apnews.com/article/institute-west-virginia-chemical-plant-explosion-2026", publishedAt: "2026-04-22", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "WV and federal agencies investigate deadly Institute chemical leak", source: "West Virginia Watch", url: "https://westvirginiawatch.com/2026/04/23/wv-federal-agencies-will-investigate-deadly-institute-chemical-leak-officials-say/", publishedAt: "2026-04-23", biasScore: "neutral", biasLabel: "Neutral — Local Newspaper" },
+    { title: "CSB opens investigation into Institute West Virginia chemical disaster", source: "WV Public Broadcasting", url: "https://wvpublic.org/story/energy-environment/shelter-in-place-order-in-effect-following-chemical-leak-in-institute/", publishedAt: "2026-04-22", biasScore: "neutral", biasLabel: "Neutral — NPR Affiliate" },
+    { title: "Violent chemical reaction: 2 dead 1 critical after Institute chemical spill", source: "WV Gazette-Mail", url: "https://www.wvgazettemail.com/news/kanawha_valley/violent-chemical-reaction-2-dead-1-in-critical-condition-after-institute-chemical-spill/article_71319fcd-9709-4caf-92c4-72c2d0e8541b.html", publishedAt: "2026-04-22", biasScore: "neutral", biasLabel: "Neutral — Local Newspaper" },
+  ],
+
+  "inc_2026_005": [
+    { title: "Explosion and fire rock Chalmette refinery no injuries reported", source: "NOLA.com Times-Picayune", url: "https://www.nola.com/news/chalmette-refinery-fire-explosion/article_a076d78f-3e99-40bf-b551-5ce71092e419.html", publishedAt: "2026-05-08", biasScore: "neutral", biasLabel: "Neutral — Local Newspaper" },
+  ],
+
 };
