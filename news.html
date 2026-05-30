@@ -434,6 +434,8 @@ async function renderRecentIncidents() {
     const causeColor = CAUSE_COLORS[inc.cause] || '#888';
     const card = document.createElement('div');
     card.className = 'event-card';
+    const fatalTag = inc.fatalities > 0 ? `<span class="event-tag" style="border-color:#ff3b3b;color:#ff3b3b">${inc.fatalities} killed</span>` : '';
+    const injuredTag = inc.injuries > 0 ? `<span class="event-tag" style="border-color:#ff6b35;color:#ff6b35">${inc.injuries} injured</span>` : '';
     card.innerHTML = `
       <div class="event-card-header">
         <div class="event-card-cause-bar" style="background:${causeColor}"></div>
@@ -443,8 +445,7 @@ async function renderRecentIncidents() {
             <span class="event-tag cause" style="--tag-color:${causeColor}">${CAUSE_LABELS[inc.cause]||inc.cause}</span>
             <span class="event-tag">${FACILITY_LABELS[inc.facility_type]||inc.facility_type}</span>
             <span class="event-tag">${inc.city}, ${inc.state}</span>
-            ${inc.fatalities > 0 ? `<span class="event-tag" style="border-color:#ff3b3b;color:#ff3b3b">${inc.fatalities} killed</span>` : ''}
-            ${inc.injuries > 0 ? `<span class="event-tag" style="border-color:#ff6b35;color:#ff6b35">${inc.injuries} injured</span>` : ''}
+            ${fatalTag}${injuredTag}
           </div>
         </div>
         <div class="event-card-date">${formatDate(inc.date)}</div>

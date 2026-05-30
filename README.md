@@ -1,11 +1,11 @@
-# 🦅 US Industrial Incident Tracker
+# 🦅 Failure Watch
 **Idaho Fidelity Foundation**  
-Live tracker: `https://idahofidelity.github.io/incident-tracker`
+Live tracker: `https://idahofidelity.github.io/failure-watch`
 
 ---
 
 ## What This Is
-Interactive US map tracking 6 years of industrial incidents — chemical plants, oil refineries, pipelines, rail tankers, petrochemical storage, and water treatment facilities. Incidents are color-coded by **cause** (accidental, intentional, under investigation, natural, unknown) and shaped by **facility type**. Each incident links to top neutral news articles scored by AI for factual bias.
+Tracking US industrial failures, infrastructure decay, and inspection violations since 2010 — chemical plants, oil refineries, pipelines, rail tankers, petrochemical storage, and water treatment facilities. Incidents are color-coded by **cause** (accidental, intentional, under investigation, natural, unknown) and shaped by **facility type**. Each incident links to top neutral news articles scored by AI for factual bias.
 
 Cross-referenced against:
 - **CSB** (Chemical Safety Board — federal, neutral)
@@ -19,8 +19,8 @@ Cross-referenced against:
 
 ### 1. Clone the repo
 ```bash
-git clone https://github.com/idahofidelity/incident-tracker.git
-cd incident-tracker
+git clone https://github.com/idahofidelity/failure-watch.git
+cd failure-watch
 ```
 
 ### 2. Add your API keys
@@ -35,10 +35,10 @@ Get keys at:
 - **Anthropic:** https://console.anthropic.com → API Keys → Create Key
 
 ### 3. Deploy to GitHub Pages
-1. Push to the `idahofidelity` GitHub org as repo named `incident-tracker`
+1. Push to the `idahofidelity` GitHub org as repo named `failure-watch`
 2. Go to **Settings → Pages**
 3. Set source to `main` branch, root `/`
-4. Live at: `https://idahofidelity.github.io/incident-tracker`
+4. Live at: `https://idahofidelity.github.io/failure-watch`
 
 ---
 
@@ -96,7 +96,7 @@ Edit `data/incidents.js`. Copy an existing entry and update all fields:
 
 ## Organization
 ```
-incident-tracker/
+failure-watch/
 ├── index.html          # Main app
 ├── config.js           # API keys (DO NOT COMMIT LIVE KEYS)
 ├── css/

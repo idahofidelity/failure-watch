@@ -1,5 +1,5 @@
 // ============================================================
-// US INDUSTRIAL INCIDENT TRACKER — CONFIG
+// FAILURE WATCH — CONFIG
 // Idaho Fidelity Foundation
 // ============================================================
 // Paste your keys here before deploying to GitHub Pages
@@ -14,10 +14,10 @@ const CONFIG = {
   GNEWS_COUNTRY: "us",
 
   // How many years back to show by default
-  DEFAULT_YEAR_RANGE: 6,
+  DEFAULT_YEAR_RANGE: 16,
 
   // Branding
-  SITE_NAME: "US Industrial Incident Tracker",
+  SITE_NAME: "Failure Watch",
   ORG_NAME: "Idaho Fidelity Foundation",
-  ORG_URL: "https://idahofidelity.com",
+  ORG_URL: "http://idahofidelity.com",
 };
