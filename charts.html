@@ -218,8 +218,8 @@
 </div>
 
 <script src="config.js"></script>
-<script src="data/incidents.js?v=202605310001"></script>
-<script src="data/scraped_incidents.js?v=202605310001" onerror="window.SCRAPED_INCIDENTS=[]"></script>
+<script src="data/incidents.js?v=202605302323"></script>
+<script src="data/scraped_incidents.js?v=202605302323" onerror="window.SCRAPED_INCIDENTS=[]"></script>
 <script>
 
 Chart.defaults.color = '#8b90a0';
@@ -261,7 +261,8 @@ const FACILITY_LABELS = {
 const ALL_INCIDENTS = [
   ...(typeof SEED_INCIDENTS !== 'undefined' ? SEED_INCIDENTS : []),
   ...(typeof SCRAPED_INCIDENTS !== 'undefined' ? SCRAPED_INCIDENTS : []),
-].map(i => ({ ...i, year: parseInt((i.date||'2020').split('-')[0]), month: parseInt((i.date||'2020-01').split('-')[1]) }));
+].filter(i => i && i.date && i.id)
+ .map(i => ({ ...i, year: parseInt((i.date||'2020').split('-')[0]), month: parseInt((i.date||'2020-01').split('-')[1]) }));
 
 // ── SUMMARY STATS ─────────────────────────────────────────
 function buildSummaryStats() {
