@@ -40,7 +40,7 @@ const state = {
     search: '',
     causes: new Set(Object.keys(CAUSE_CONFIG)),
     facilities: new Set(Object.keys(FACILITY_CONFIG)),
-    yearFrom: 2019,
+    yearFrom: 2010,
     yearTo: new Date().getFullYear(),
     xref: null,
     sort: 'date_desc',
