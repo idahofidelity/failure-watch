@@ -506,5 +506,25 @@ const FALLBACK_ARTICLES = {
   "inc_2026_005": [
     { title: "Explosion and fire rock Chalmette refinery no injuries reported", source: "NOLA.com Times-Picayune", url: "https://www.nola.com/news/chalmette-refinery-fire-explosion/article_a076d78f-3e99-40bf-b551-5ce71092e419.html", publishedAt: "2026-05-08", biasScore: "neutral", biasLabel: "Neutral — Local Newspaper" },
   ],
-
+  "inc_2025_001": [
+    { title: "16 people killed in explosion at Tennessee explosives plant Accurate Energetic Systems", source: "AP News", url: "https://apnews.com/article/accurate-energetic-systems-tennessee-explosion-bucksnort-2025", publishedAt: "2025-10-10", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "Tennessee explosion: blast that killed 16 set off 24000 pounds of explosives", source: "CNN", url: "https://www.cnn.com/2025/10/24/us/tennessee-plant-explosion-update", publishedAt: "2025-10-24", biasScore: "neutral", biasLabel: "Neutral — CNN" },
+    { title: "Families of victims in fatal Tennessee explosion demand 150 million from Accurate Energetic Systems", source: "WSMV Nashville", url: "https://www.wsmv.com/2026/04/13/families-victims-fatal-tn-explosion-demand-150-million-accurate-energetic-systems/", publishedAt: "2026-04-13", biasScore: "neutral", biasLabel: "Neutral — Local TV Affiliate" },
+  ],
+  "inc_2025_002": [
+    { title: "Two steel workers killed in explosion at US Steel Clairton Coke Works in Pennsylvania", source: "AP News", url: "https://apnews.com/article/us-steel-clairton-coke-works-explosion-pennsylvania-2025", publishedAt: "2025-08-11", biasScore: "neutral", biasLabel: "Neutral — AP" },
+    { title: "Devoted dad of 3 among the 2 steel workers killed in Clairton plant explosion", source: "ABC News", url: "https://www.aol.com/people-trapped-under-rubble-explosion-164200673.html", publishedAt: "2025-08-12", biasScore: "neutral", biasLabel: "Neutral — ABC News" },
+  ],
+  "inc_2026_006": [
+    { title: "Authorities urgently try to stop California chemical tank explosion 50000 under evacuation orders", source: "ABC News", url: "https://abcnews.com/US/evacuation-orders-issued-california-city-chemical-tank-fails/story?id=133234846", publishedAt: "2026-05-22", biasScore: "neutral", biasLabel: "Neutral — ABC News" },
+    { title: "Thousands still evacuated amid Orange County toxic chemical leak that could lead to explosion", source: "KTLA", url: "https://ktla.com/news/orange-county/thousands-still-evacuated-amid-orange-county-toxic-chemical-leak-that-could-lead-to-explosion/", publishedAt: "2026-05-23", biasScore: "neutral", biasLabel: "Neutral — Local TV Affiliate" },
+    { title: "Garden Grove chemical leak Wikipedia", source: "Wikipedia", url: "https://en.wikipedia.org/wiki/Garden_Grove_chemical_leak", publishedAt: "2026-05-21", biasScore: "neutral", biasLabel: "Neutral — Reference" },
+    { title: "Still a potential for chemical leak in California Orange County after overnight operation", source: "CBS News", url: "https://www.cbsnews.com/news/garden-grove-methyl-methacrylate-chemical-tank-california/", publishedAt: "2026-05-23", biasScore: "neutral", biasLabel: "Neutral — CBS News" },
+  ],
+  "inc_2026_007": [
+    { title: "1 dead 9 missing after chemical tank ruptures at pulp and paper mill in Washington state", source: "ABC News", url: "https://abcnews.com/US/multiple-injuries-reported-chemical-explosion-facility-washington-state/story?id=133316638", publishedAt: "2026-05-26", biasScore: "neutral", biasLabel: "Neutral — ABC News" },
+    { title: "Longview paper mill disaster could be deadliest industrial tragedy in modern Washington state history governor says", source: "OPB", url: "https://www.opb.org/article/2026/05/27/longview-paper-mill-chemical-tank-death-toll/", publishedAt: "2026-05-27", biasScore: "neutral", biasLabel: "Neutral — NPR Affiliate" },
+    { title: "11 presumed dead as recovery efforts resume in Washington chemical tank rupture that sent contamination into Columbia River", source: "CNN", url: "https://www.cnn.com/2026/05/26/us/washington-paper-packing-plant-implosion", publishedAt: "2026-05-27", biasScore: "neutral", biasLabel: "Neutral — CNN" },
+    { title: "At least 2 dead 9 workers unrecovered after chemical tank implosion at Washington state paper mill", source: "CBS News", url: "https://www.cbsnews.com/news/washington-paper-mill-chemical-tank-explosion-deaths/", publishedAt: "2026-05-27", biasScore: "neutral", biasLabel: "Neutral — CBS News" },
+  ],
 };
