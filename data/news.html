@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>News Feed | Failure Watch | Idaho Fidelity Foundation</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body { overflow: auto; }
+
+    #news-app {
+      position: relative;
+      top: var(--header-height);
+      min-height: calc(100vh - var(--header-height));
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 24px 60px;
+    }
+
+    .news-title {
+      font-family: var(--font-display);
+      font-size: 32px;
+      letter-spacing: 0.08em;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .news-title span { color: var(--accent-gold); }
+
+    .news-subtitle {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .news-subtitle a { color: var(--accent-gold); text-decoration: none; }
+
+    .news-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+
+    .news-column-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      letter-spacing: 0.06em;
+      padding-bottom: 10px;
+      border-bottom: 2px solid;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .news-column-title.incidents { color: #ff6b35; border-color: #ff6b35; }
+    .news-column-title.repairs   { color: #a78bfa; border-color: #a78bfa; }
+
+    .news-column-subtitle {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: -10px;
+      margin-bottom: 16px;
+    }
+
+    /* Incident event card */
+    .event-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+      transition: border-color 0.15s;
+    }
+
+    .event-card:hover { border-color: var(--border-light); }
+
+    .event-card-header {
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .event-card-cause-bar {
+      width: 3px;
+      align-self: stretch;
+      border-radius: 1px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .event-card-meta { flex: 1; }
+
+    .event-card-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.35;
+      margin-bottom: 5px;
+    }
+
+    .event-card-tags {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .event-tag {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .event-tag.cause { border-color: var(--tag-color); color: var(--tag-color); }
+
+    .event-card-date {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Article list inside event */
+    .event-articles {
+      padding: 10px 14px;
+    }
+
+    .feed-article {
+      display: flex;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: flex-start;
+    }
+
+    .feed-article:last-child { border-bottom: none; }
+
+    .feed-article-source {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--accent-gold);
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+      width: 90px;
+      padding-top: 2px;
+    }
+
+    .feed-article-right { flex: 1; min-width: 0; }
+
+    .feed-article-title {
+      font-size: 12px;
+      color: var(--text-primary);
+      line-height: 1.4;
+      margin-bottom: 2px;
+    }
+
+    .feed-article-title a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .feed-article-title a:hover { color: var(--accent-gold); }
+
+    .feed-article-date {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .feed-article-bias {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      padding: 1px 5px;
+      border: 1px solid;
+      margin-left: 6px;
+    }
+
+    .feed-article-bias.neutral { border-color: #00c896; color: #00c896; }
+    .feed-article-bias.slight  { border-color: #ffd93d; color: #ffd93d; }
+
+    .articles-loading {
+      padding: 16px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent-gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Repair/inspection card */
+    .repair-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-left: 3px solid #a78bfa;
+      margin-bottom: 14px;
+      padding: 14px 16px;
+    }
+
+    .repair-card-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 5px;
+    }
+
+    .repair-card-meta {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .repair-card-reason {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .repair-card-status {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .repair-status-badge {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      padding: 2px 7px;
+      border: 1px solid;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .repair-articles {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .repair-article-link {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+    }
+
+    .repair-article-link:last-child { border-bottom: none; }
+
+    .repair-article-src {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--accent-gold);
+      white-space: nowrap;
+      flex-shrink: 0;
+      width: 80px;
+    }
+
+    .repair-article-title {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+
+    .repair-article-link:hover .repair-article-title { color: var(--accent-gold); }
+
+    .no-data {
+      padding: 24px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    /* Live badge */
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: #ff3b3b;
+      border: 1px solid #ff3b3b;
+      padding: 2px 7px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .live-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #ff3b3b;
+      animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    @media (max-width: 800px) {
+      .news-grid { grid-template-columns: 1fr; }
+      #news-app { padding: 16px 14px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<header id="header">
+  <div id="header-left">
+    <a id="iff-badge" href="https://idahofidelity.com" target="_blank" rel="noopener">
+      <span class="iff-eagle">🦅</span>
+      <div class="iff-text"><strong>IFF</strong>Idaho Fidelity Foundation</div>
+    </a>
+    <div id="site-title">FAILURE <span>WATCH</span></div>
+  </div>
+  <div id="header-right">
+    <a href="index.html" class="header-btn">🗺️ Map</a>
+    <a href="charts.html" class="header-btn">📊 Charts</a>
+    <a href="news.html" class="header-btn" style="border-color:var(--accent-gold);color:var(--accent-gold)">📰 News</a>
+    <a href="about.html" class="header-btn">ℹ About</a>
+    <a href="https://idahofidelity.com" target="_blank" rel="noopener" class="header-btn">idahofidelity.com</a>
+  </div>
+</header>
+
+<div id="news-app">
+  <div class="news-title">FAILURE <span>WATCH</span> NEWS FEED</div>
+  <div class="news-subtitle">
+    <a href="index.html">← Back to Map</a> &nbsp;·&nbsp;
+    Recent Incident Coverage &amp; Upcoming Repairs &amp; Inspections
+    &nbsp;·&nbsp; <span class="live-badge"><span class="live-dot"></span>Live</span>
+  </div>
+
+  <div class="news-grid">
+
+    <!-- LEFT: Recent Incidents + Articles -->
+    <div id="incidents-col">
+      <div class="news-column-title incidents">🔴 RECENT INCIDENTS</div>
+      <div class="news-column-subtitle">Latest 3 incidents — sourced articles rated for neutrality</div>
+      <div id="recent-incidents-list"><div class="articles-loading"><span class="spinner"></span>Loading incidents...</div></div>
+    </div>
+
+    <!-- RIGHT: Upcoming Repairs / Inspections -->
+    <div id="repairs-col">
+      <div class="news-column-title repairs">🔧 REPAIRS &amp; INSPECTIONS</div>
+      <div class="news-column-subtitle">Facilities with active orders, violations, or scheduled work — latest news</div>
+      <div id="repairs-list"><div class="articles-loading"><span class="spinner"></span>Loading facilities...</div></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="data/incidents.js"></script>
+<script src="data/scraped_incidents.js" onerror="window.SCRAPED_INCIDENTS=[]"></script>
+<script src="data/at_risk_facilities.js" onerror="window.AT_RISK_FACILITIES=[]"></script>
+<script src="data/fallback_articles.js"></script>
+<script>
+
+const CAUSE_COLORS = {
+  accidental: '#4a9eff', intentional: '#ff3b3b',
+  under_investigation: '#ff8c00', natural_cause: '#00c896', unknown: '#a78bfa',
+};
+
+const FACILITY_LABELS = {
+  oil_refinery: 'Oil Refinery', chemical_plant: 'Chemical Plant',
+  pipeline: 'Pipeline', rail_tanker: 'Rail Tanker',
+  petrochemical_storage: 'Petrochem Storage', water_treatment: 'Water Treatment',
+  bridge: 'Bridge', power_grid: 'Power/Grid',
+};
+
+const CAUSE_LABELS = {
+  accidental: 'Accidental', intentional: 'Intentional',
+  under_investigation: 'Under Investigation', natural_cause: 'Natural Cause', unknown: 'Unknown',
+};
+
+function formatDate(d) {
+  if (!d) return '';
+  const [y,m,day] = d.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[parseInt(m)-1]} ${parseInt(day)}, ${y}`;
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── ALL INCIDENTS MERGED ──────────────────────────────────
+const ALL = [
+  ...(typeof SEED_INCIDENTS !== 'undefined' ? SEED_INCIDENTS : []),
+  ...(typeof SCRAPED_INCIDENTS !== 'undefined' ? SCRAPED_INCIDENTS : []),
+].sort((a,b) => new Date(b.date) - new Date(a.date));
+
+// ── RENDER RECENT INCIDENTS ───────────────────────────────
+async function renderRecentIncidents() {
+  const container = document.getElementById('recent-incidents-list');
+  const recent = ALL.slice(0, 3);
+
+  if (!recent.length) {
+    container.innerHTML = '<div class="no-data">No incidents loaded.</div>';
+    return;
+  }
+
+  container.innerHTML = '';
+
+  for (const inc of recent) {
+    const causeColor = CAUSE_COLORS[inc.cause] || '#888';
+    const card = document.createElement('div');
+    card.className = 'event-card';
+    card.innerHTML = `
+      <div class="event-card-header">
+        <div class="event-card-cause-bar" style="background:${causeColor}"></div>
+        <div class="event-card-meta">
+          <div class="event-card-name">${escHtml(inc.name)}</div>
+          <div class="event-card-tags">
+            <span class="event-tag cause" style="--tag-color:${causeColor}">${CAUSE_LABELS[inc.cause]||inc.cause}</span>
+            <span class="event-tag">${FACILITY_LABELS[inc.facility_type]||inc.facility_type}</span>
+            <span class="event-tag">${inc.city}, ${inc.state}</span>
+            ${inc.fatalities > 0 ? `<span class="event-tag" style="border-color:#ff3b3b;color:#ff3b3b">${inc.fatalities} killed</span>` : ''}
+            ${inc.injuries > 0 ? `<span class="event-tag" style="border-color:#ff6b35;color:#ff6b35">${inc.injuries} injured</span>` : ''}
+          </div>
+        </div>
+        <div class="event-card-date">${formatDate(inc.date)}</div>
+      </div>
+      <div class="event-articles" id="articles-${inc.id}">
+        <div class="articles-loading"><span class="spinner"></span>Fetching articles...</div>
+      </div>
+    `;
+    container.appendChild(card);
+    loadArticlesForIncident(inc);
+  }
+}
+
+async function loadArticlesForIncident(inc) {
+  const container = document.getElementById(`articles-${inc.id}`);
+  if (!container) return;
+
+  // Check static fallback first
+  const fallback = (typeof FALLBACK_ARTICLES !== 'undefined') ? FALLBACK_ARTICLES[inc.id] : null;
+  if (fallback && fallback.length) {
+    renderFeedArticles(container, fallback.slice(0, 3));
+    // Try live GNews in background
+    tryLiveArticles(inc, container, fallback.slice(0, 3));
+    return;
+  }
+
+  // Try GNews live
+  const articles = await gnewsFetch(inc);
+  if (articles.length) {
+    try {
+      const scored = await scoreArticles(articles, inc.name);
+      renderFeedArticles(container, scored.slice(0, 3));
+    } catch {
+      renderFeedArticles(container, articles.slice(0, 3));
+    }
+  } else {
+    container.innerHTML = `<div class="articles-loading" style="font-size:10px">
+      No articles found. <a href="https://news.google.com/search?q=${encodeURIComponent(inc.name)}" target="_blank" rel="noopener" style="color:var(--accent-gold)">Search Google News ↗</a>
+    </div>`;
+  }
+}
+
+async function tryLiveArticles(inc, container, fallback) {
+  try {
+    const live = await gnewsFetch(inc);
+    if (!live.length) return;
+    const scored = await scoreArticles(live, inc.name);
+    const merged = [...scored.slice(0,2), ...fallback].slice(0,3);
+    renderFeedArticles(container, merged);
+  } catch {}
+}
+
+async function gnewsFetch(inc) {
+  try {
+    const q = encodeURIComponent(`"${inc.name}" OR "${inc.city} ${(inc.facility_type||'').replace(/_/g,' ')} explosion fire leak"`);
+    const from = inc.date;
+    const to = new Date(new Date(inc.date).getTime() + 90*24*60*60*1000).toISOString().split('T')[0];
+    const url = `https://gnews.io/api/v4/search?q=${q}&from=${from}&to=${to}&lang=en&country=us&max=8&apikey=${CONFIG.GNEWS_API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    return (data.articles||[]).map(a => ({
+      title: a.title, url: a.url,
+      source: a.source?.name||'Unknown',
+      publishedAt: a.publishedAt?.split('T')[0]||inc.date,
+      biasScore: 'unscored', biasLabel: 'Unscored',
+    }));
+  } catch { return []; }
+}
+
+async function scoreArticles(articles, incidentName) {
+  const prompt = `Rate each article about "${incidentName}" for neutrality. Return ONLY JSON array, no other text:
+[{"index":0,"biasScore":"neutral","biasLabel":"Neutral — AP/Reuters"},...]
+Scale: neutral=factual/AP/Reuters/local TV, slight=minor bias, biased=advocacy framing
+Articles:
+${articles.map((a,i)=>`${i}. Source: ${a.source} | Title: ${a.title}`).join('\n')}`;
+
+  const res = await fetch(CONFIG.ANTHROPIC_WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
+  });
+  const data = await res.json();
+  const text = data.content?.[0]?.text||'[]';
+  let scores = [];
+  try { scores = JSON.parse(text.replace(/```json|```/g,'').trim()); } catch { return articles; }
+  const order = { neutral:0, slight:1, biased:2, unscored:3 };
+  return articles
+    .map((a,i) => { const s=scores.find(s=>s.index===i)||{}; return {...a, biasScore:s.biasScore||'unscored', biasLabel:s.biasLabel||'Unscored'}; })
+    .sort((a,b) => (order[a.biasScore]||3)-(order[b.biasScore]||3));
+}
+
+function renderFeedArticles(container, articles) {
+  if (!articles || !articles.length) {
+    container.innerHTML = '<div class="articles-loading" style="font-size:10px;color:var(--text-muted)">No articles found.</div>';
+    return;
+  }
+  container.innerHTML = articles.map(a => `
+    <div class="feed-article">
+      <div class="feed-article-source">${escHtml(a.source)}</div>
+      <div class="feed-article-right">
+        <div class="feed-article-title">
+          <a href="${escHtml(a.url)}" target="_blank" rel="noopener">${escHtml(a.title)}</a>
+          ${a.biasScore==='neutral' ? '<span class="feed-article-bias neutral">Neutral</span>' : a.biasScore==='slight' ? '<span class="feed-article-bias slight">Slight</span>' : ''}
+        </div>
+        <div class="feed-article-date">${formatDate(a.publishedAt)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── RENDER REPAIRS / INSPECTIONS ──────────────────────────
+async function renderRepairs() {
+  const container = document.getElementById('repairs-list');
+  const facilities = (typeof AT_RISK_FACILITIES !== 'undefined') ? AT_RISK_FACILITIES : [];
+
+  // Prioritize: repairs_planned or violations > 0, then aging_critical
+  const prioritized = [...facilities]
+    .sort((a,b) => {
+      const score = f => (f.repairs_planned?10:0) + (f.violations||0)*3 + (f.risk_status==='aging_critical'?5:0);
+      return score(b) - score(a);
+    })
+    .slice(0, 3);
+
+  if (!prioritized.length) {
+    // Show placeholder cards from known at-risk situations
+    container.innerHTML = `
+      <div class="repair-card">
+        <div class="repair-card-name">Colonial Pipeline — Alabama Segments</div>
+        <div class="repair-card-meta">Pipeline · Alabama · PHMSA Corrective Action History</div>
+        <div class="repair-card-reason">Repeat failures at same location (2016 spill, 2018 corrective order). Pattern of infrastructure neglect documented by PHMSA.</div>
+        <div class="repair-card-status">
+          <span class="repair-status-badge" style="border-color:#ffd93d;color:#ffd93d">⚡ Violations</span>
+          <span class="repair-status-badge" style="border-color:#a78bfa;color:#a78bfa">🔧 Repairs Ordered</span>
+        </div>
+        <div class="repair-articles" id="repair-colonial">
+          <div class="articles-loading"><span class="spinner"></span>Loading articles...</div>
+        </div>
+      </div>
+      <div class="repair-card">
+        <div class="repair-card-name">Monticello Nuclear Plant — Minnesota</div>
+        <div class="repair-card-meta">Power Grid · Monticello, MN · NRC / Xcel Energy</div>
+        <div class="repair-card-reason">829,000-gallon tritium leak in 2022 reached Mississippi River. Xcel Energy remediation ongoing. NRC license extension review. Plant 52 years old.</div>
+        <div class="repair-card-status">
+          <span class="repair-status-badge" style="border-color:#ff1a1a;color:#ff1a1a">🔴 Critical Age (52yr)</span>
+          <span class="repair-status-badge" style="border-color:#a78bfa;color:#a78bfa">🔧 Remediation Active</span>
+        </div>
+        <div class="repair-articles" id="repair-monticello">
+          <div class="articles-loading"><span class="spinner"></span>Loading articles...</div>
+        </div>
+      </div>
+      <div class="repair-card">
+        <div class="repair-card-name">PG&E Bay Area Gas Distribution — California</div>
+        <div class="repair-card-meta">Pipeline · Bay Area, CA · CPUC / PHMSA</div>
+        <div class="repair-card-reason">Post-San Bruno conviction PG&E under ongoing CPUC oversight. Multi-billion dollar pipeline replacement program. Aging cast-iron and bare steel pipe replacement active.</div>
+        <div class="repair-card-status">
+          <span class="repair-status-badge" style="border-color:#ff6b35;color:#ff6b35">⚠ Aging Infrastructure</span>
+          <span class="repair-status-badge" style="border-color:#a78bfa;color:#a78bfa">🔧 Active Replacement</span>
+        </div>
+        <div class="repair-articles" id="repair-pge">
+          <div class="articles-loading"><span class="spinner"></span>Loading articles...</div>
+        </div>
+      </div>
+    `;
+    loadRepairArticles('repair-colonial', 'Colonial Pipeline Alabama repairs PHMSA corrective action');
+    loadRepairArticles('repair-monticello', 'Monticello nuclear plant tritium leak remediation 2024 2025');
+    loadRepairArticles('repair-pge', 'PG&E pipeline replacement infrastructure repair California 2025 2026');
+    return;
+  }
+
+  container.innerHTML = '';
+  for (const f of prioritized) {
+    const card = document.createElement('div');
+    card.className = 'repair-card';
+    const repairId = `repair-${f.id}`;
+    const statusBadges = [];
+    if (f.risk_status === 'aging_critical') statusBadges.push(`<span class="repair-status-badge" style="border-color:#ff1a1a;color:#ff1a1a">🔴 Critical Age (${f.age_years}yr)</span>`);
+    else if (f.risk_status === 'aging_moderate') statusBadges.push(`<span class="repair-status-badge" style="border-color:#ff6b35;color:#ff6b35">⚠ Aging (${f.age_years}yr)</span>`);
+    if (f.violations > 0) statusBadges.push(`<span class="repair-status-badge" style="border-color:#ffd93d;color:#ffd93d">⚡ ${f.violations} Violations</span>`);
+    if (f.repairs_planned) statusBadges.push(`<span class="repair-status-badge" style="border-color:#a78bfa;color:#a78bfa">🔧 Repairs Planned</span>`);
+    if (f.inspection_status && f.inspection_status !== 'unknown') statusBadges.push(`<span class="repair-status-badge" style="border-color:var(--border);color:var(--text-muted)">${f.inspection_status.replace(/_/g,' ')}</span>`);
+
+    card.innerHTML = `
+      <div class="repair-card-name">${escHtml(f.name)}</div>
+      <div class="repair-card-meta">${FACILITY_LABELS[f.facility_type]||f.facility_type} · ${f.city}, ${f.state} · Source: ${f.source}</div>
+      <div class="repair-card-reason">${escHtml(f.risk_reason)}</div>
+      <div class="repair-card-status">${statusBadges.join('')}</div>
+      <div class="repair-articles" id="${repairId}">
+        <div class="articles-loading"><span class="spinner"></span>Loading articles...</div>
+      </div>
+    `;
+    container.appendChild(card);
+    loadRepairArticles(repairId, `${f.name} inspection repair violation`);
+  }
+}
+
+async function loadRepairArticles(containerId, query) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  try {
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 180);
+    const from = cutoff.toISOString().split('T')[0];
+    const to = new Date().toISOString().split('T')[0];
+    const q = encodeURIComponent(query);
+    const url = `https://gnews.io/api/v4/search?q=${q}&from=${from}&to=${to}&lang=en&country=us&max=5&apikey=${CONFIG.GNEWS_API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const articles = (data.articles||[]).slice(0,3);
+    if (!articles.length) {
+      container.innerHTML = `<div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);padding:8px 0">No recent coverage found.</div>`;
+      return;
+    }
+    container.innerHTML = articles.map(a => `
+      <a class="repair-article-link" href="${escHtml(a.url)}" target="_blank" rel="noopener">
+        <span class="repair-article-src">${escHtml(a.source?.name||'News')}</span>
+        <span class="repair-article-title">${escHtml(a.title)}</span>
+      </a>
+    `).join('');
+  } catch {
+    container.innerHTML = `<div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);padding:8px 0">Unable to load articles.</div>`;
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────
+renderRecentIncidents();
+renderRepairs();
+
+</script>
+</body>
+</html>

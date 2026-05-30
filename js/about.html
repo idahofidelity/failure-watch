@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About | Failure Watch | Idaho Fidelity Foundation</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body { overflow: auto; }
+
+    #about-app {
+      position: relative;
+      top: var(--header-height);
+      min-height: calc(100vh - var(--header-height));
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+
+    .about-title {
+      font-family: var(--font-display);
+      font-size: 42px;
+      letter-spacing: 0.08em;
+      color: var(--text-primary);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .about-title span { color: var(--accent-gold); }
+
+    .about-tagline {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .about-section {
+      margin-bottom: 40px;
+    }
+
+    .about-section-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      letter-spacing: 0.06em;
+      color: var(--accent-gold);
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .about-section p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.75;
+      margin-bottom: 12px;
+    }
+
+    .about-section p a {
+      color: var(--accent-gold);
+      text-decoration: none;
+    }
+
+    .about-section p a:hover {
+      text-decoration: underline;
+    }
+
+    .source-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .source-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+    }
+
+    .source-name {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .source-badge {
+      font-size: 9px;
+      padding: 2px 6px;
+      border: 1px solid;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .source-badge.federal { border-color: #00c896; color: #00c896; }
+    .source-badge.news    { border-color: #4a9eff; color: #4a9eff; }
+    .source-badge.activist { border-color: #ff8c00; color: #ff8c00; }
+    .source-badge.legal   { border-color: #a78bfa; color: #a78bfa; }
+    .source-badge.financial { border-color: var(--accent-gold); color: var(--accent-gold); }
+
+    .source-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .source-url {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      display: block;
+    }
+
+    .source-url a {
+      color: var(--accent-gold);
+      text-decoration: none;
+    }
+
+    .methodology-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      margin-top: 14px;
+    }
+
+    .methodology-table th {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--bg-card);
+    }
+
+    .methodology-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+
+    .methodology-table tr:hover td { background: var(--bg-card); }
+
+    .cause-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .disclaimer-box {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent-gold);
+      padding: 16px 20px;
+      margin-top: 14px;
+    }
+
+    .disclaimer-box p {
+      margin-bottom: 0 !important;
+      font-size: 13px !important;
+    }
+
+    .iff-about-block {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      padding: 24px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      margin-top: 14px;
+    }
+
+    .iff-eagle-large { font-size: 48px; line-height: 1; flex-shrink: 0; }
+
+    .iff-about-text h3 {
+      font-family: var(--font-display);
+      font-size: 20px;
+      letter-spacing: 0.06em;
+      color: var(--accent-gold);
+      margin-bottom: 8px;
+    }
+
+    .update-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .update-step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .update-step-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-gold);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .update-step-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 700px) {
+      #about-app { padding: 20px 14px 60px; }
+      .about-title { font-size: 28px; }
+      .source-grid { grid-template-columns: 1fr; }
+      .iff-about-block { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<header id="header">
+  <div id="header-left">
+    <a id="iff-badge" href="https://idahofidelity.com" target="_blank" rel="noopener">
+      <span class="iff-eagle">🦅</span>
+      <div class="iff-text"><strong>IFF</strong>Idaho Fidelity Foundation</div>
+    </a>
+    <div id="site-title">FAILURE <span>WATCH</span></div>
+  </div>
+  <div id="header-right">
+    <a href="index.html" class="header-btn">🗺️ Map</a>
+    <a href="charts.html" class="header-btn">📊 Charts</a>
+    <a href="about.html" class="header-btn" style="border-color:var(--accent-gold);color:var(--accent-gold)">ℹ About</a>
+  </div>
+</header>
+
+<div id="about-app">
+
+  <div class="about-title">FAILURE <span>WATCH</span></div>
+  <div class="about-tagline">US Industrial Incident Tracker · Idaho Fidelity Foundation · Data-Driven Public Accountability</div>
+
+  <!-- What This Is -->
+  <div class="about-section">
+    <div class="about-section-title">WHAT THIS IS</div>
+    <p>Failure Watch is a public-interest tracker documenting US industrial incidents — explosions, fires, spills, leaks, infrastructure failures, and attacks — at chemical plants, oil refineries, pipelines, rail lines, bridges, and power facilities from 2010 to present.</p>
+    <p>The purpose is transparency. Mainstream media covers only the most dramatic incidents. Federal agencies track some but not all. Activist organizations track incidents selectively to advance specific narratives. Failure Watch cross-references all of these and fills the gaps — presenting incidents factually, without political framing, with sourced articles rated for neutrality.</p>
+    <p>This is an Idaho Fidelity Foundation project. IFF is a conservative, Idaho-first public interest organization committed to government accountability, infrastructure transparency, and data-driven reporting.</p>
+  </div>
+
+  <!-- About IFF -->
+  <div class="about-section">
+    <div class="about-section-title">IDAHO FIDELITY FOUNDATION</div>
+    <div class="iff-about-block">
+      <div class="iff-eagle-large">🦅</div>
+      <div class="iff-about-text">
+        <h3>Idaho Fidelity Foundation</h3>
+        <p>The Idaho Fidelity Foundation (IFF) is a conservative public interest organization based in Idaho. IFF builds transparent, data-driven public resources to hold government and industry accountable — from homelessness tracking to infrastructure safety monitoring.</p>
+        <p>Failure Watch is one of several IFF public data projects. All data and source code are publicly available on GitHub.</p>
+        <p style="margin-top:10px">
+          <a href="https://idahofidelity.com" target="_blank" rel="noopener">idahofidelity.com</a> &nbsp;·&nbsp;
+          <a href="https://github.com/idahofidelity" target="_blank" rel="noopener">github.com/idahofidelity</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Sources -->
+  <div class="about-section">
+    <div class="about-section-title">DATA SOURCES</div>
+    <p>Failure Watch pulls from federal agencies, news sources, and activist trackers. Each source is labeled so users know the origin and potential framing of data.</p>
+
+    <div class="source-grid">
+
+      <div class="source-card">
+        <div class="source-name">CSB — Chemical Safety Board <span class="source-badge federal">Federal</span></div>
+        <div class="source-desc">Independent federal agency that investigates chemical accidents. Most authoritative source for cause determinations. Investigations are thorough, slow, and politically neutral.</div>
+        <span class="source-url"><a href="https://csb.gov" target="_blank" rel="noopener">csb.gov</a></span>
+      </div>
+
+      <div class="source-card">
+        <div class="source-name">PHMSA — Pipeline Safety <span class="source-badge federal">Federal</span></div>
+        <div class="source-desc">DOT agency tracking pipeline incidents, corrective action orders, and inspection records. Most comprehensive pipeline safety database in the US.</div>
+        <span class="source-url"><a href="https://phmsa.dot.gov" target="_blank" rel="noopener">phmsa.dot.gov</a></span>
+      </div>
+
+      <div class="source-card">
+        <div class="source-name">EPA RMP — Risk Management <span class="source-badge federal">Federal</span></div>
+        <div class="source-desc">EPA's Risk Management Plan database. Facilities storing hazardous chemicals above threshold quantities must file. Includes accident history and emergency response plans.</div>
+        <span class="source-url"><a href="https://epa.gov/rmp" target="_blank" rel="noopener">epa.gov/rmp</a></span>
+      </div>
+
+      <div class="source-card">
+        <div class="source-name">NTSB — Transportation Safety <span class="source-badge federal">Federal</span></div>
+        <div class="source-desc">Investigates rail and pipeline transportation accidents. Authoritative for rail tanker derailments and pipeline incidents involving transportation.</div>
+        <span class="source-url"><a href="https://ntsb.gov" target="_blank" rel="noopener">ntsb.gov</a></span>
+      </div>
+
+      <div class="source-card">
+        <div class="source-name">NRC — Nuclear Regulatory Commission <span class="source-badge federal">Federal</span></div>
+        <div class="source-desc">Event notifications and inspection findings for all US nuclear facilities. Tracks unusual events, radiation releases, and license violations.</div>
+        <span class="source-url"><a href="https://nrc.gov" target="_blank" rel="noopener">nrc.gov</a></span>
+      </div>
+
+      <div class="source-card">
+        <div class="source-name">OSHA — Workplace Safety <span class="source-badge federal">Federal</span></div>
+        <div class="source-desc">Inspection records, citations, and severe violator program data for chemical and industrial facilities. Public via OSHA data portal.</div>
+        <span class="source-url"><a href="https://osha.gov" target="_blank" rel="noopener">osha.gov</a></span>
+      </div>
+
+      <div class="source-card">
+        <div class="source-name">EIA — Energy Information Administration <span class="source-badge federal">Federal</span></div>
+        <div class="source-desc">Refinery age, capacity, and operational data. Used to identify aging facilities approaching industry failure thresholds.</div>
+        <span class="source-url"><a href="https://eia.gov" target="_blank" rel="noopener">eia.gov</a></span>
+      </div>
+
+      <div class="source-card">
+        <div class="source-name">Google News RSS <span class="source-badge news">News</span></div>
+        <div class="source-desc">Wide-net news scraper pulling from thousands of local and national sources using industrial incident trigger keywords. Catches incidents missed by federal databases.</div>
+        <span class="source-url"><a href="https://news.google.com" target="_blank" rel="noopener">news.google.com</a></span>
+      </div>
+
+      <div class="source-card">
+        <div class="source-name">SpillTracker.org <span class="source-badge activist">Cross-Ref Only</span></div>
+        <div class="source-desc">Bloomberg-funded environmental activist tracker. Used for cross-reference only. Known for left-leaning framing and selective incident coverage. Listed on pins where applicable so users can compare coverage.</div>
+        <span class="source-url"><a href="https://spilltracker.org" target="_blank" rel="noopener">spilltracker.org</a></span>
+      </div>
+
+      <div class="source-card">
+        <div class="source-name">Coalition to Prevent Chemical Disasters <span class="source-badge activist">Cross-Ref Only</span></div>
+        <div class="source-desc">Environmental NGO tracker. Used for cross-reference only. Environmental advocacy framing. Listed on pins where applicable.</div>
+        <span class="source-url"><a href="https://chemicaldisasters.org" target="_blank" rel="noopener">chemicaldisasters.org</a></span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- News Article Sourcing -->
+  <div class="about-section">
+    <div class="about-section-title">NEWS ARTICLE SOURCING & BIAS RATING</div>
+    <p>Each incident pin links to up to 5 news articles. Articles are pulled from GNews (which indexes 80,000+ sources including local papers) and rated for neutrality by AI before display.</p>
+    <p>Rating scale:</p>
+    <table class="methodology-table">
+      <thead>
+        <tr><th>Rating</th><th>What It Means</th><th>Typical Sources</th></tr>
+      </thead>
+      <tbody>
+        <tr><td style="color:#00c896">✓ Neutral</td><td>Factual reporting, minimal framing</td><td>AP, Reuters, NPR, local TV affiliates, government agencies</td></tr>
+        <tr><td style="color:#ffd93d">~ Slight</td><td>Minor framing present but informative</td><td>Regional newspapers, trade publications</td></tr>
+        <tr><td style="color:#ff6b35">⚠ Biased</td><td>Significant advocacy framing</td><td>Activist org sites, heavily partisan outlets</td></tr>
+        <tr><td style="color:var(--text-muted)">— Unscored</td><td>Not yet rated</td><td>Recently added articles</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:12px">Neutral-rated articles are shown first. Fallback articles (pre-researched by IFF staff) are used when live search returns no results.</p>
+  </div>
+
+  <!-- Map Legend / Methodology -->
+  <div class="about-section">
+    <div class="about-section-title">MAP METHODOLOGY</div>
+    <table class="methodology-table">
+      <thead>
+        <tr><th>Visual Element</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Pin Color</td><td>Cause: <span class="cause-dot" style="background:#4a9eff"></span>Accidental &nbsp; <span class="cause-dot" style="background:#ff3b3b"></span>Intentional &nbsp; <span class="cause-dot" style="background:#ff8c00"></span>Under Investigation &nbsp; <span class="cause-dot" style="background:#00c896"></span>Natural Cause &nbsp; <span class="cause-dot" style="background:#a78bfa"></span>Unknown</td></tr>
+        <tr><td>Pin Shape</td><td>Facility type: ■ Refinery &nbsp; ◆ Chemical Plant &nbsp; ▲ Pipeline &nbsp; ⬠ Rail &nbsp; ⬡ Storage &nbsp; ★ Water &nbsp; ✚ Bridge &nbsp; ⚡ Power/Grid</td></tr>
+        <tr><td>Pin Size</td><td>Severity: Large = Catastrophic &nbsp; Medium = Major &nbsp; Small = Moderate</td></tr>
+        <tr><td>⚡ Lightning bolt (at-risk layer)</td><td>Facility flagged for aging, inspection failure, violations, or planned repairs — no confirmed incident required</td></tr>
+        <tr><td>Faded/dashed lightning</td><td>Aging watch (30-35 years old)</td></tr>
+        <tr><td>Solid orange lightning</td><td>Aging moderate (35-50 years old)</td></tr>
+        <tr><td>Solid red lightning</td><td>Critical age (50+ years) or active violations</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- At-Risk Facilities -->
+  <div class="about-section">
+    <div class="about-section-title">AT-RISK FACILITIES LAYER</div>
+    <p>The at-risk layer shows facilities that have NOT necessarily had an incident but are flagged based on federal criteria:</p>
+    <p><strong style="color:var(--text-primary)">Age thresholds</strong> — Industry standard design life is 30-50 years for most process equipment. The American Petroleum Institute (API), ASME, and PHMSA all publish standards on inspection intervals and expected service life. Facilities approaching or exceeding these thresholds are flagged.</p>
+    <p><strong style="color:var(--text-primary)">Inspection failures</strong> — OSHA citations, PHMSA corrective action orders, EPA enforcement actions, and NRC violation notices are all public record. Facilities with active orders are flagged.</p>
+    <p><strong style="color:var(--text-primary)">Planned repairs</strong> — SEC 10-K and 10-Q filings by public companies disclose mandatory repair and upgrade programs. These are included where available.</p>
+    <div class="disclaimer-box">
+      <p>⚠ Presence on the at-risk layer does not mean a facility is unsafe or will fail. It means it meets criteria that federal standards identify as warranting heightened scrutiny. All facilities on this layer are operating legally.</p>
+    </div>
+  </div>
+
+  <!-- Update Schedule -->
+  <div class="about-section">
+    <div class="about-section-title">HOW DATA IS UPDATED</div>
+    <div class="update-timeline">
+      <div class="update-step">
+        <span class="update-step-num">WEEKLY</span>
+        <div class="update-step-text">Automated scraper runs every Sunday night. Pulls from CSB, PHMSA, NRC, EPA ECHO, OSHA, and Google News RSS across 14 trigger keyword queries. New incidents are automatically committed to GitHub and appear on the map within minutes.</div>
+      </div>
+      <div class="update-step">
+        <span class="update-step-num">MANUAL</span>
+        <div class="update-step-text">IFF staff manually review and add major incidents that require more detailed research — cause determination, financial figures, and cross-referencing against federal agency databases.</div>
+      </div>
+      <div class="update-step">
+        <span class="update-step-num">FINANCIAL</span>
+        <div class="update-step-text">Damage and cleanup cost figures are added only when confirmed by federal agency reports, court records, or company filings. Estimated figures are clearly labeled. All amounts shown in both as-reported and 2025 inflation-adjusted dollars.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coverage Gap Disclosure -->
+  <div class="about-section">
+    <div class="about-section-title">COVERAGE GAP DISCLOSURE</div>
+    <p>No single database captures all US industrial incidents. Failure Watch is more comprehensive than any single federal or activist source but is not exhaustive. Known limitations:</p>
+    <p>• Small incidents with no injuries, no evacuation, and no media coverage often go unreported in all databases. PHMSA and OSHA require reporting above certain thresholds — below-threshold incidents may not be captured.</p>
+    <p>• State-level incidents (regulated by state agencies rather than federal) vary significantly in reporting quality by state.</p>
+    <p>• The at-risk facility layer is limited to facilities with public federal data. Private companies with no EPA RMP filing, no SEC disclosure, and no PHMSA records may be absent.</p>
+    <p>• Historical data (2010-2018) relies more heavily on news sources and Wikipedia than the more recent data, which has fuller federal agency cross-referencing.</p>
+    <p>To report an incident or data error, contact IFF at <a href="mailto:info@idahofidelity.com">info@idahofidelity.com</a>.</p>
+  </div>
+
+  <!-- Open Source -->
+  <div class="about-section">
+    <div class="about-section-title">OPEN SOURCE</div>
+    <p>All source code for Failure Watch is publicly available on GitHub under the Idaho Fidelity Foundation organization. The data files, scraper, and front-end code are all open for inspection and reuse.</p>
+    <p><a href="https://github.com/idahofidelity/incident-tracker" target="_blank" rel="noopener">github.com/idahofidelity/incident-tracker</a></p>
+  </div>
+
+</div>
+
+</body>
+</html>
