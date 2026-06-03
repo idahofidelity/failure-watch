@@ -354,8 +354,8 @@ def scrape_epa_echo():
         if r.status_code == 200:
             data = r.json()
             for item in (data.get('Results', {}).get('PenaltyResults', []) or [])[:20]:
-                name = item.get('FacilityName', 'Unknown Facility')
-                city = item.get('CityName', 'Unknown')
+                name = strip_html(item.get('FacilityName', 'Unknown Facility'))
+                city = strip_html(item.get('CityName', 'Unknown'))
                 state = item.get('StateCode', 'US')
                 date = item.get('SettlementDate', datetime.now().strftime('%Y-%m-%d'))
                 penalty = item.get('FederalPenaltyImposed', 0)
@@ -387,7 +387,7 @@ def scrape_epa_echo():
                     'cleanup_cost': {'amount': float(penalty) if penalty else None, 'adjusted': float(penalty) if penalty else None, 'confidence': 'confirmed', 'note': 'EPA ECHO enforcement penalty'},
                     'infrastructure_damage': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
                     'economic_impact': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
-                    'description': f"EPA enforcement action against {name} in {city}, {state}.",
+                    'description': strip_html(f"EPA enforcement action against {name} in {city}, {state}."),
                     'source_url': f"https://echo.epa.gov/detailed-facility-report?fid={item.get('RegistryId','')}",
                     'source': 'EPA ECHO',
                     'csb_investigated': False, 'spilltracker_listed': False,
@@ -492,8 +492,8 @@ def scrape_osha_violations():
         if r.status_code == 200:
             data = r.json()
             for item in (data or [])[:30]:
-                name = item.get('estab_name', 'Unknown Facility')
-                city = item.get('city', 'Unknown')
+                name = strip_html(item.get('estab_name', 'Unknown Facility'))
+                city = strip_html(item.get('city', 'Unknown'))
                 state = item.get('state', 'US')
                 naics = str(item.get('naics_code', ''))
                 close_date = item.get('close_dt', '')
@@ -517,14 +517,14 @@ def scrape_osha_violations():
                     'city': city, 'state': state,
                     'facility_type': detect_facility_type(name),
                     'cause': 'under_investigation',
-                    'cause_detail': f"OSHA inspection found {num_violations} violations. Type: {violation_type}.",
+                    'cause_detail': strip_html(f"OSHA inspection found {num_violations} violations. Type: {violation_type}."),
                     'severity': 'moderate',
                     'injuries': 0, 'fatalities': 0,
                     'displaced_temp': 0, 'displaced_perm': 0,
                     'cleanup_cost': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
                     'infrastructure_damage': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
                     'economic_impact': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
-                    'description': f"OSHA inspection of {name} in {city}, {state} found {num_violations} violations.",
+                    'description': strip_html(f"OSHA inspection of {name} in {city}, {state} found {num_violations} violations."),
                     'source_url': f"https://www.osha.gov/establishments/{name.replace(' ', '%20')}",
                     'source': 'OSHA',
                     'csb_investigated': False, 'spilltracker_listed': False,
@@ -799,12 +799,12 @@ def scrape_sec_repair_filings():
 
 
 def deduplicate(incidents):
-    """Strong dedup — title + month, not just title + month"""
+    """Strong dedup — title + full date, not just title + month"""
     seen = {}
     result = []
     for inc in incidents:
-        # Use first 60 chars of cleaned title + year-month
-        key = re.sub(r'\W+', '', inc['name'].lower())[:60] + inc['date'][:7]
+        # Use first 60 chars of cleaned title + full date (YYYY-MM-DD)
+        key = re.sub(r'\W+', '', inc['name'].lower())[:60] + inc['date'][:10]
         if key not in seen:
             seen[key] = True
             result.append(inc)
