@@ -1,0 +1,46 @@
+name: Post New Incidents to X
+
+on:
+  push:
+    paths:
+      - 'data/scraped_incidents.js'
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  post-incidents:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install tweepy
+
+      - name: Post new incidents to X
+        env:
+          X_API_KEY:             ${{ secrets.X_API_KEY }}
+          X_API_SECRET:          ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:        ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          TRACKER_URL:           ${{ secrets.TRACKER_URL }}
+        run: python scripts/post_incidents_to_x.py
+
+      - name: Commit updated posted log
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/posted_incident_ids.txt
+          git diff --cached --quiet || git commit -m "chore: update posted incidents log"
+          git push

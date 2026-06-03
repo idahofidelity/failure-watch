@@ -1,0 +1,44 @@
+name: Post Daily At-Risk Warning to X
+
+on:
+  schedule:
+    - cron: '0 15 * * *'   # 8:00 AM MT (UTC-7)
+    - cron: '0 1 * * *'    # 6:00 PM MT (UTC-7)
+  workflow_dispatch:
+
+jobs:
+  post-warning:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install tweepy
+
+      - name: Post at-risk warning to X
+        env:
+          X_API_KEY:             ${{ secrets.X_API_KEY }}
+          X_API_SECRET:          ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:        ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          TRACKER_URL:           ${{ secrets.TRACKER_URL }}
+        run: python scripts/post_daily_warning_to_x.py
+
+      - name: Commit updated warning log
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/posted_warning_ids.txt
+          git diff --cached --quiet || git commit -m "chore: update posted warnings log"
+          git push
