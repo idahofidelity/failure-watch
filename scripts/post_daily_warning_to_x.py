@@ -30,7 +30,7 @@ TYPE_EMOJI = {
     "chemical_plant":        "🏭",
     "oil_refinery":          "🔥",
     "refinery":              "🔥",
-    "pipeline":              "⚡",
+    "pipeline":              "🔧",
     "bridge":                "🌉",
     "power_plant":           "⚡",
     "power_grid":            "⚡",
