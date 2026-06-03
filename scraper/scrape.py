@@ -1,21 +1,7 @@
-#!/usr/bin/env python3
 """
 US Industrial Incident Tracker — Weekly Scraper
 Idaho Fidelity Foundation
-
-Sources:
-  - CSB (Chemical Safety Board) incident RSS
-  - PHMSA (Pipeline incident data API)
-  - EPA RMP (Risk Management Plan incidents)
-  - OSHA IMIS (workplace incidents)
-  - NRC (Nuclear Regulatory Commission event notifications)
-  - Google News RSS (trigger word search across all sources)
-  - EIA (facility age/capacity data for at-risk layer)
-  - PHMSA pipeline age database
-
-Outputs:
-  - data/scraped_incidents.js   (new incidents found this week)
-  - data/at_risk_facilities.js  (aging/at-risk facility layer)
+PATCHED: Google News URL resolution, HTML stripping, stronger dedup
 """
 
 import os
@@ -35,7 +21,6 @@ log = logging.getLogger(__name__)
 
 GNEWS_API_KEY = os.environ.get('GNEWS_API_KEY', '')
 
-# ── TRIGGER WORDS ─────────────────────────────────────────
 TRIGGER_WORDS = [
     'explosion', 'exploded', 'explodes',
     'refinery fire', 'chemical plant fire', 'pipeline explosion',
@@ -66,7 +51,6 @@ EXCLUDE_WORDS = [
     'stock market', 'cryptocurrency',
 ]
 
-# ── FACILITY TYPES ────────────────────────────────────────
 FACILITY_KEYWORDS = {
     'oil_refinery':          ['refinery', 'petroleum refinery', 'crude oil processing'],
     'chemical_plant':        ['chemical plant', 'chemical facility', 'chemical complex', 'petrochemical plant'],
@@ -85,7 +69,6 @@ CAUSE_KEYWORDS = {
     'accidental':          ['accident', 'failure', 'malfunction', 'leak', 'rupture', 'corrosion'],
 }
 
-# ── GOOGLE NEWS RSS QUERIES ───────────────────────────────
 GNEWS_QUERIES = [
     'chemical plant explosion OR fire OR leak USA',
     'oil refinery explosion OR fire USA',
@@ -121,10 +104,37 @@ STATE_NAME_TO_ABBREV = STATE_ABBREVS
 ABBREV_TO_NAME = {v: k for k, v in STATE_ABBREVS.items()}
 
 
-# ── HELPERS ───────────────────────────────────────────────
+# ── HELPERS ───────────────────────────────────────────────────────────────────
 
 def make_id(text):
     return 'scraped_' + hashlib.md5(text.encode()).hexdigest()[:10]
+
+def strip_html(text):
+    """Remove HTML tags and decode entities."""
+    if not text:
+        return ''
+    return BeautifulSoup(text, 'html.parser').get_text(separator=' ', strip=True)
+
+def resolve_gnews_url(url):
+    """Follow Google News RSS redirect to get the real article URL."""
+    if not url or 'news.google.com' not in url:
+        return url
+    try:
+        r = requests.get(
+            url, timeout=10, allow_redirects=True,
+            headers={'User-Agent': 'Mozilla/5.0 (compatible; IFF-Bot/1.0)'}
+        )
+        final = r.url
+        # If still a Google URL, try to extract from the response
+        if 'news.google.com' in final:
+            soup = BeautifulSoup(r.text, 'html.parser')
+            canonical = soup.find('link', rel='canonical')
+            if canonical and 'news.google.com' not in canonical.get('href', ''):
+                return canonical['href']
+        return final
+    except Exception as e:
+        log.warning(f"URL resolve failed: {e}")
+        return url
 
 def is_relevant(text):
     text_lower = text.lower()
@@ -153,14 +163,12 @@ def extract_state(text):
     return 'US'
 
 def extract_city(text):
-    # Look for "City, ST" patterns
     m = re.search(r'([A-Z][a-zA-Z\s]{2,20}),\s*([A-Z]{2})', text)
     if m:
         return m.group(1).strip()
     return 'Unknown'
 
 def geocode(city, state):
-    """Use OSM Nominatim to get lat/lng"""
     try:
         query = f"{city}, {state}, USA"
         url = f"https://nominatim.openstreetmap.org/search?q={requests.utils.quote(query)}&format=json&limit=1"
@@ -170,45 +178,40 @@ def geocode(city, state):
             return float(data[0]['lat']), float(data[0]['lon'])
     except Exception as e:
         log.warning(f"Geocode failed for {city}, {state}: {e}")
-    # State centroid fallback
     STATE_CENTROIDS = {
         'TX':(31.0,-100.0),'LA':(31.0,-92.0),'CA':(36.7,-119.4),'OH':(40.4,-82.7),
         'IL':(40.0,-89.0),'PA':(40.9,-77.8),'WI':(44.2,-89.8),'NC':(35.5,-79.4),
         'WA':(47.4,-120.4),'MD':(39.0,-76.8),'OK':(35.5,-96.9),'TN':(35.8,-86.4),
-        'MN':(46.4,-93.0),'TX':(31.0,-100.0),'GA':(32.9,-83.6),'AL':(32.8,-86.8),
+        'MN':(46.4,-93.0),'GA':(32.9,-83.6),'AL':(32.8,-86.8),
         'VA':(37.9,-79.4),'MO':(38.4,-92.5),'MS':(32.7,-89.7),'IA':(42.0,-93.2),
         'KS':(38.5,-98.3),'AZ':(34.2,-111.1),'NM':(34.3,-106.0),'ND':(47.5,-100.4),
+        'NJ':(40.0,-74.5),'NY':(43.0,-75.5),'TX':(31.0,-100.0),
     }
     return STATE_CENTROIDS.get(state, (39.5, -98.3))
 
 
-# ── SCRAPERS ──────────────────────────────────────────────
+# ── SCRAPERS ──────────────────────────────────────────────────────────────────
 
 def scrape_csb():
-    """Chemical Safety Board - official incident RSS"""
     log.info("Scraping CSB...")
     incidents = []
     try:
         feed = feedparser.parse('https://www.csb.gov/news/investigations/rss/')
         for entry in feed.entries:
-            title = entry.get('title', '')
-            summary = entry.get('summary', '')
+            title = strip_html(entry.get('title', ''))
+            summary = strip_html(entry.get('summary', ''))
             link = entry.get('link', '')
             published = entry.get('published', '')
             text = f"{title} {summary}"
-
             if not is_relevant(text):
                 continue
-
             try:
                 pub_date = dateparser.parse(published).strftime('%Y-%m-%d')
             except:
                 pub_date = datetime.now().strftime('%Y-%m-%d')
-
             city = extract_city(text)
             state = extract_state(text)
             lat, lng = geocode(city, state)
-
             incidents.append({
                 'id': make_id(title + pub_date),
                 'name': title,
@@ -238,30 +241,23 @@ def scrape_csb():
 
 
 def scrape_phmsa():
-    """PHMSA Pipeline incident API - significant incidents last 90 days"""
     log.info("Scraping PHMSA...")
     incidents = []
     try:
-        # PHMSA public data portal
-        url = "https://www.phmsa.dot.gov/data-and-statistics/pipeline/pipeline-incident-flagged-files"
-        # Use their RSS feed for recent significant incidents
         feed = feedparser.parse('https://www.phmsa.dot.gov/rss/incidents')
         for entry in feed.entries:
-            title = entry.get('title', '')
-            summary = entry.get('summary', '')
+            title = strip_html(entry.get('title', ''))
+            summary = strip_html(entry.get('summary', ''))
             link = entry.get('link', '')
             published = entry.get('published', str(datetime.now()))
             text = f"{title} {summary}"
-
             try:
                 pub_date = dateparser.parse(published).strftime('%Y-%m-%d')
             except:
                 pub_date = datetime.now().strftime('%Y-%m-%d')
-
             city = extract_city(text)
             state = extract_state(text)
             lat, lng = geocode(city, state)
-
             incidents.append({
                 'id': make_id(title + pub_date),
                 'name': title,
@@ -291,24 +287,19 @@ def scrape_phmsa():
 
 
 def scrape_nrc():
-    """NRC - Nuclear Regulatory Commission event notifications"""
     log.info("Scraping NRC...")
     incidents = []
     try:
-        # NRC event notifications RSS
         feed = feedparser.parse('https://www.nrc.gov/reading-rm/doc-collections/event-status/event/en.rss')
         cutoff = datetime.now() - timedelta(days=90)
         for entry in feed.entries[:50]:
-            title = entry.get('title', '')
-            summary = entry.get('summary', '')
+            title = strip_html(entry.get('title', ''))
+            summary = strip_html(entry.get('summary', ''))
             link = entry.get('link', '')
             published = entry.get('published', str(datetime.now()))
             text = f"{title} {summary}"
-
-            # Only grab meaningful events, not routine notifications
             if not any(kw in text.lower() for kw in ['leak', 'release', 'fire', 'explosion', 'unusual event', 'alert', 'site area emergency', 'general emergency', 'tritium', 'radiation']):
                 continue
-
             try:
                 pub_date = dateparser.parse(published)
                 if pub_date.replace(tzinfo=None) < cutoff:
@@ -316,11 +307,9 @@ def scrape_nrc():
                 pub_date = pub_date.strftime('%Y-%m-%d')
             except:
                 pub_date = datetime.now().strftime('%Y-%m-%d')
-
             state = extract_state(text)
             city = extract_city(text)
             lat, lng = geocode(city, state)
-
             incidents.append({
                 'id': make_id(title + pub_date),
                 'name': f"NRC Event: {title[:80]}",
@@ -350,15 +339,13 @@ def scrape_nrc():
 
 
 def scrape_epa_echo():
-    """EPA ECHO enforcement actions — facilities with violations"""
     log.info("Scraping EPA ECHO...")
     incidents = []
     try:
-        # EPA ECHO facility search API — recent enforcement actions for chemical/oil facilities
         url = "https://echo.epa.gov/api/search/penalty"
         params = {
-            'p_act': 'Y',  # Active enforcement
-            'p_st': '',    # All states
+            'p_act': 'Y',
+            'p_st': '',
             'p_industry': 'petroleum,chemical',
             'output': 'JSON',
             'qcolumns': '1,2,3,4,5,6,7,8,9,10',
@@ -374,7 +361,6 @@ def scrape_epa_echo():
                 penalty = item.get('FederalPenaltyImposed', 0)
                 lat_s = item.get('Latitude83', '')
                 lng_s = item.get('Longitude83', '')
-
                 try:
                     lat = float(lat_s) if lat_s else None
                     lng = float(lng_s) if lng_s else None
@@ -382,12 +368,10 @@ def scrape_epa_echo():
                         lat, lng = geocode(city, state)
                 except:
                     lat, lng = geocode(city, state)
-
                 try:
                     date = dateparser.parse(str(date)).strftime('%Y-%m-%d')
                 except:
                     date = datetime.now().strftime('%Y-%m-%d')
-
                 incidents.append({
                     'id': make_id(name + date),
                     'name': f"EPA Enforcement: {name}",
@@ -416,11 +400,11 @@ def scrape_epa_echo():
 
 
 def scrape_google_news_rss():
-    """Google News RSS - wide net across all local and national sources"""
+    """Google News RSS — resolve real URLs, strip HTML, strong dedup"""
     log.info("Scraping Google News RSS...")
     incidents = []
     seen_titles = set()
-    cutoff = datetime.now() - timedelta(days=14)  # 2 weeks for news; historical data in incidents.js goes to 2010  # Last 2 weeks
+    cutoff = datetime.now() - timedelta(days=14)
 
     for query in GNEWS_QUERIES:
         try:
@@ -430,14 +414,14 @@ def scrape_google_news_rss():
             log.info(f"  Query '{query[:40]}': {len(feed.entries)} results")
 
             for entry in feed.entries[:15]:
-                title = entry.get('title', '')
-                summary = entry.get('summary', entry.get('description', ''))
-                link = entry.get('link', '')
+                title = strip_html(entry.get('title', ''))
+                summary = strip_html(entry.get('summary', entry.get('description', '')))
+                raw_link = entry.get('link', '')
                 published = entry.get('published', str(datetime.now()))
                 text = f"{title} {summary}"
 
-                # Deduplicate
-                title_key = re.sub(r'\W+', '', title.lower())[:60]
+                # Strong dedup — first 50 chars of cleaned title
+                title_key = re.sub(r'\W+', '', title.lower())[:50]
                 if title_key in seen_titles:
                     continue
                 seen_titles.add(title_key)
@@ -453,19 +437,24 @@ def scrape_google_news_rss():
                 except:
                     pub_date_str = datetime.now().strftime('%Y-%m-%d')
 
+                # ── RESOLVE REAL URL ──────────────────────────────────
+                real_url = resolve_gnews_url(raw_link)
+                time.sleep(0.5)  # polite delay after resolution
+
                 city = extract_city(title + ' ' + summary)
                 state = extract_state(title + ' ' + summary)
                 lat, lng = geocode(city, state)
 
-                # Extract source name from Google News title format "Title - Source"
+                # Extract source from "Title - Source" format
                 source = 'News'
+                clean_title = title
                 if ' - ' in title:
                     source = title.split(' - ')[-1].strip()
-                    title = ' - '.join(title.split(' - ')[:-1]).strip()
+                    clean_title = ' - '.join(title.split(' - ')[:-1]).strip()
 
                 incidents.append({
-                    'id': make_id(title + pub_date_str),
-                    'name': title[:120],
+                    'id': make_id(clean_title + pub_date_str),
+                    'name': clean_title[:120],
                     'date': pub_date_str,
                     'lat': lat, 'lng': lng,
                     'city': city, 'state': state,
@@ -478,14 +467,14 @@ def scrape_google_news_rss():
                     'cleanup_cost': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
                     'infrastructure_damage': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
                     'economic_impact': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
-                    'description': summary[:400] if summary else title,
-                    'source_url': link,
+                    'description': summary[:400] if summary else clean_title,
+                    'source_url': real_url,   # ← RESOLVED URL
                     'source': source,
                     'csb_investigated': False, 'spilltracker_listed': False,
                     'coalition_listed': False, 'epa_rmp': False,
-                    'articles': [{'title': title, 'url': link, 'source': source, 'publishedAt': pub_date_str, 'biasScore': 'unscored', 'biasLabel': 'Unscored'}],
+                    'articles': [{'title': clean_title, 'url': real_url, 'source': source, 'publishedAt': pub_date_str, 'biasScore': 'unscored', 'biasLabel': 'Unscored'}],
                 })
-            time.sleep(1.5)  # Polite delay between queries
+            time.sleep(1.5)
         except Exception as e:
             log.error(f"Google News RSS failed for '{query}': {e}")
 
@@ -493,23 +482,67 @@ def scrape_google_news_rss():
     return incidents
 
 
+def scrape_osha_violations():
+    log.info("Scraping OSHA violations...")
+    incidents = []
+    try:
+        url = "https://data.dol.gov/get/full_osha_inspection/rows/20/offset/0"
+        headers = {'Accept': 'application/json'}
+        r = requests.get(url, headers=headers, timeout=15)
+        if r.status_code == 200:
+            data = r.json()
+            for item in (data or [])[:30]:
+                name = item.get('estab_name', 'Unknown Facility')
+                city = item.get('city', 'Unknown')
+                state = item.get('state', 'US')
+                naics = str(item.get('naics_code', ''))
+                close_date = item.get('close_dt', '')
+                violation_type = item.get('safety_hlth', '')
+                num_violations = item.get('total_viol_cnt', 0)
+                relevant_naics = ['211', '212', '213', '324', '325', '331', '333', '486']
+                if not any(naics.startswith(n) for n in relevant_naics):
+                    continue
+                if int(num_violations or 0) == 0:
+                    continue
+                try:
+                    date = dateparser.parse(str(close_date)).strftime('%Y-%m-%d')
+                except:
+                    date = datetime.now().strftime('%Y-%m-%d')
+                lat, lng = geocode(city, state)
+                incidents.append({
+                    'id': make_id(name + city + date),
+                    'name': f"OSHA Inspection Failure: {name}",
+                    'date': date,
+                    'lat': lat, 'lng': lng,
+                    'city': city, 'state': state,
+                    'facility_type': detect_facility_type(name),
+                    'cause': 'under_investigation',
+                    'cause_detail': f"OSHA inspection found {num_violations} violations. Type: {violation_type}.",
+                    'severity': 'moderate',
+                    'injuries': 0, 'fatalities': 0,
+                    'displaced_temp': 0, 'displaced_perm': 0,
+                    'cleanup_cost': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
+                    'infrastructure_damage': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
+                    'economic_impact': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
+                    'description': f"OSHA inspection of {name} in {city}, {state} found {num_violations} violations.",
+                    'source_url': f"https://www.osha.gov/establishments/{name.replace(' ', '%20')}",
+                    'source': 'OSHA',
+                    'csb_investigated': False, 'spilltracker_listed': False,
+                    'coalition_listed': False, 'epa_rmp': False,
+                    'inspection_failure': True,
+                })
+                time.sleep(0.2)
+    except Exception as e:
+        log.error(f"OSHA scrape failed: {e}")
+    log.info(f"OSHA: {len(incidents)} inspection failures")
+    return incidents
+
+
 def scrape_at_risk_facilities():
-    """
-    Scrape EIA, EPA RMP, PHMSA, and NRC for aging/at-risk facilities.
-    Returns facilities that are:
-      - 30+ years old (aging)
-      - Failed inspections
-      - Have active violations
-      - Have planned repairs/upgrades
-    """
     log.info("Scraping at-risk facilities...")
     facilities = []
 
-    # ── EIA Refinery Data ──────────────────────────────────
     try:
-        # EIA refinery capacity data
-        url = "https://www.eia.gov/petroleum/refinerycapacity/table3.pdf"
-        # Use EIA API for operable refineries
         eia_url = "https://api.eia.gov/v2/petroleum/refine/capacity/data/?frequency=annual&data[0]=value&facets[process]=TCP&sort[0][column]=period&sort[0][direction]=desc&offset=0&length=100"
         r = requests.get(eia_url, timeout=15)
         if r.status_code == 200:
@@ -518,21 +551,16 @@ def scrape_at_risk_facilities():
                 name = item.get('facility-name', item.get('areaName', 'Unknown Refinery'))
                 state = item.get('state', item.get('stateCode', 'US'))
                 year_built = item.get('year-built', None)
-
                 if not year_built:
                     continue
-
                 try:
                     age = datetime.now().year - int(year_built)
                 except:
                     continue
-
                 if age < 25:
-                    continue  # Only flag aging facilities
-
+                    continue
                 lat, lng = geocode(name, state)
                 risk_status = 'aging_critical' if age >= 50 else 'aging_moderate' if age >= 35 else 'aging_watch'
-
                 facilities.append({
                     'id': make_id(name + state),
                     'name': name,
@@ -553,9 +581,7 @@ def scrape_at_risk_facilities():
     except Exception as e:
         log.error(f"EIA scrape failed: {e}")
 
-    # ── EPA RMP Facilities ─────────────────────────────────
     try:
-        # EPA RMP facility search — facilities with recent violations or plan submissions
         rmp_url = "https://rmp.epa.gov/api/facilities"
         params = {'output': 'JSON', 'rows': 100, 'start': 0}
         r = requests.get(rmp_url, params=params, timeout=15)
@@ -569,7 +595,6 @@ def scrape_at_risk_facilities():
                 lng_s = item.get('longitude', '')
                 last_submission = item.get('submissionDate', '')
                 num_accidents = item.get('numAccidents', 0)
-
                 try:
                     lat = float(lat_s) if lat_s else None
                     lng = float(lng_s) if lng_s else None
@@ -577,11 +602,8 @@ def scrape_at_risk_facilities():
                         lat, lng = geocode(city, state)
                 except:
                     lat, lng = geocode(city, state)
-
-                # Flag if has accident history
                 if int(num_accidents or 0) == 0:
                     continue
-
                 facilities.append({
                     'id': make_id(name + city + state),
                     'name': name,
@@ -602,23 +624,7 @@ def scrape_at_risk_facilities():
     except Exception as e:
         log.error(f"EPA RMP scrape failed: {e}")
 
-    # ── PHMSA Pipeline Age Data ────────────────────────────
     try:
-        # PHMSA pipeline mileage by material/decade installed
-        phmsa_url = "https://www.phmsa.dot.gov/data-and-statistics/pipeline/data-and-statistics-overview"
-        # Use their public gas transmission data
-        r = requests.get(
-            "https://portal.phmsa.dot.gov/analytics/saw.dll?portalpages&PortalPath=%2Fshared%2FPDM%20Public%20Website%2F_portal%2FGas%20Transmission%20Annual%20Report%20Mileage",
-            timeout=15
-        )
-        # If direct API unavailable, scrape the summary page
-        age_thresholds = [
-            {'decade': '1950s', 'age': 75, 'risk': 'aging_critical'},
-            {'decade': '1960s', 'age': 65, 'risk': 'aging_critical'},
-            {'decade': '1970s', 'age': 55, 'risk': 'aging_critical'},
-            {'decade': '1980s', 'age': 45, 'risk': 'aging_moderate'},
-        ]
-        # Add representative pipeline corridor entries for known aging systems
         aging_pipelines = [
             {'name': 'Transcontinental Gas Pipeline (Transco) - Vintage Segments', 'state': 'NJ', 'city': 'Woodbridge', 'lat': 40.5572, 'lng': -74.2846, 'age': 65, 'risk': 'aging_critical'},
             {'name': 'Tennessee Gas Pipeline - Pre-1960 Segments', 'state': 'TN', 'city': 'Nashville', 'lat': 36.1627, 'lng': -86.7816, 'age': 70, 'risk': 'aging_critical'},
@@ -647,7 +653,6 @@ def scrape_at_risk_facilities():
     except Exception as e:
         log.error(f"PHMSA pipeline age scrape failed: {e}")
 
-    # ── NRC Nuclear License Expirations ───────────────────
     try:
         nuclear_aging = [
             {'name': 'Diablo Canyon Power Plant', 'city': 'Avila Beach', 'state': 'CA', 'lat': 35.2108, 'lng': -120.8546, 'age': 44, 'risk': 'aging_critical', 'note': 'License extended; seismic concerns'},
@@ -683,78 +688,10 @@ def scrape_at_risk_facilities():
     return facilities
 
 
-
-
-def scrape_osha_violations():
-    """OSHA severe violator and chemical facility inspection failures"""
-    log.info("Scraping OSHA violations...")
-    incidents = []
-    try:
-        # OSHA IMIS inspection data API
-        url = "https://data.dol.gov/get/full_osha_inspection/rows/20/offset/0"
-        headers = {'Accept': 'application/json'}
-        r = requests.get(url, headers=headers, timeout=15)
-        if r.status_code == 200:
-            data = r.json()
-            for item in (data or [])[:30]:
-                name = item.get('estab_name', 'Unknown Facility')
-                city = item.get('city', 'Unknown')
-                state = item.get('state', 'US')
-                naics = str(item.get('naics_code', ''))
-                close_date = item.get('close_dt', '')
-                violation_type = item.get('safety_hlth', '')
-                num_violations = item.get('total_viol_cnt', 0)
-
-                # Only flag chemical/petroleum NAICS codes
-                relevant_naics = ['211', '212', '213', '324', '325', '331', '333', '486']
-                if not any(naics.startswith(n) for n in relevant_naics):
-                    continue
-
-                if int(num_violations or 0) == 0:
-                    continue
-
-                try:
-                    date = dateparser.parse(str(close_date)).strftime('%Y-%m-%d')
-                except:
-                    date = datetime.now().strftime('%Y-%m-%d')
-
-                lat, lng = geocode(city, state)
-
-                incidents.append({
-                    'id': make_id(name + city + date),
-                    'name': f"OSHA Inspection Failure: {name}",
-                    'date': date,
-                    'lat': lat, 'lng': lng,
-                    'city': city, 'state': state,
-                    'facility_type': detect_facility_type(name),
-                    'cause': 'under_investigation',
-                    'cause_detail': f"OSHA inspection found {num_violations} violations. Type: {violation_type}.",
-                    'severity': 'moderate',
-                    'injuries': 0, 'fatalities': 0,
-                    'displaced_temp': 0, 'displaced_perm': 0,
-                    'cleanup_cost': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
-                    'infrastructure_damage': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
-                    'economic_impact': {'amount': None, 'adjusted': None, 'confidence': None, 'note': None},
-                    'description': f"OSHA inspection of {name} in {city}, {state} found {num_violations} violations.",
-                    'source_url': f"https://www.osha.gov/establishments/{name.replace(' ', '%20')}",
-                    'source': 'OSHA',
-                    'csb_investigated': False, 'spilltracker_listed': False,
-                    'coalition_listed': False, 'epa_rmp': False,
-                    'inspection_failure': True,
-                })
-                time.sleep(0.2)
-    except Exception as e:
-        log.error(f"OSHA scrape failed: {e}")
-    log.info(f"OSHA: {len(incidents)} inspection failures")
-    return incidents
-
-
 def scrape_phmsa_corrective_actions():
-    """PHMSA corrective action orders — facilities ordered to repair"""
     log.info("Scraping PHMSA corrective actions...")
     facilities = []
     try:
-        # PHMSA enforcement database
         url = "https://portal.phmsa.dot.gov/pipeline-security/api/enforcement/cao"
         r = requests.get(url, timeout=15)
         if r.status_code == 200:
@@ -765,14 +702,11 @@ def scrape_phmsa_corrective_actions():
                 city = item.get('city', 'Unknown')
                 date = item.get('issueDate', datetime.now().strftime('%Y-%m-%d'))
                 order_num = item.get('caoNumber', '')
-
                 try:
                     date = dateparser.parse(str(date)).strftime('%Y-%m-%d')
                 except:
                     date = datetime.now().strftime('%Y-%m-%d')
-
                 lat, lng = geocode(city, state)
-
                 facilities.append({
                     'id': make_id(name + order_num),
                     'name': name,
@@ -790,8 +724,6 @@ def scrape_phmsa_corrective_actions():
                 })
     except Exception as e:
         log.error(f"PHMSA CAO scrape failed: {e}")
-
-    # Also check PHMSA warning letters
     try:
         wl_url = "https://portal.phmsa.dot.gov/pipeline-security/api/enforcement/wl"
         r = requests.get(wl_url, timeout=15)
@@ -823,20 +755,17 @@ def scrape_phmsa_corrective_actions():
                 })
     except Exception as e:
         log.error(f"PHMSA warning letters failed: {e}")
-
     log.info(f"PHMSA CAO/WL: {len(facilities)} facilities")
     return facilities
 
 
 def scrape_sec_repair_filings():
-    """SEC EDGAR filings mentioning infrastructure repairs/upgrades for public companies"""
     log.info("Scraping SEC repair filings...")
     facilities = []
     try:
-        # Use SEC EDGAR full-text search for recent 10-K/10-Q filings mentioning infrastructure repairs
         keywords = ['pipeline repair', 'refinery upgrade', 'infrastructure repair mandatory',
                     'consent order repair', 'EPA consent decree', 'corrective action plan']
-        for kw in keywords[:3]:  # Limit to avoid rate limiting
+        for kw in keywords[:3]:
             url = f"https://efts.sec.gov/LATEST/search-index?q=%22{requests.utils.quote(kw)}%22&dateRange=custom&startdt={datetime.now().strftime('%Y')}-01-01&forms=10-K,10-Q"
             r = requests.get(url, timeout=15,
                 headers={'User-Agent': 'IFF-IncidentTracker/1.0 bot@idahofidelity.com'})
@@ -845,6 +774,8 @@ def scrape_sec_repair_filings():
                 for hit in (data.get('hits', {}).get('hits', []) or [])[:5]:
                     company = hit.get('_source', {}).get('entity_name', 'Unknown')
                     filing_date = hit.get('_source', {}).get('file_date', datetime.now().strftime('%Y-%m-%d'))
+                    if not company or company == 'Unknown':
+                        continue
                     facilities.append({
                         'id': make_id(company + filing_date + kw),
                         'name': company,
@@ -866,12 +797,14 @@ def scrape_sec_repair_filings():
     log.info(f"SEC filings: {len(facilities)} facilities")
     return facilities
 
+
 def deduplicate(incidents):
-    """Remove near-duplicate incidents by title similarity and date proximity"""
+    """Strong dedup — title + month, not just title + month"""
     seen = {}
     result = []
     for inc in incidents:
-        key = re.sub(r'\W+', '', inc['name'].lower())[:50] + inc['date'][:7]
+        # Use first 60 chars of cleaned title + year-month
+        key = re.sub(r'\W+', '', inc['name'].lower())[:60] + inc['date'][:7]
         if key not in seen:
             seen[key] = True
             result.append(inc)
@@ -879,7 +812,6 @@ def deduplicate(incidents):
 
 
 def load_existing_ids():
-    """Load existing incident IDs to avoid re-adding known incidents"""
     existing = set()
     for fname in ['data/incidents.js', 'data/scraped_incidents.js']:
         if os.path.exists(fname):
@@ -890,18 +822,13 @@ def load_existing_ids():
 
 
 def write_js(incidents, facilities):
-    """Write output JS files"""
     os.makedirs('data', exist_ok=True)
-
-    # scraped_incidents.js
     inc_json = json.dumps(incidents, indent=2, default=str)
     with open('data/scraped_incidents.js', 'w') as f:
         f.write(f"// Auto-generated by IFF scraper — {datetime.now().strftime('%Y-%m-%d %H:%M UTC')}\n")
         f.write(f"// {len(incidents)} incidents scraped this run\n")
         f.write(f"const SCRAPED_INCIDENTS = {inc_json};\n")
     log.info(f"Wrote {len(incidents)} scraped incidents")
-
-    # at_risk_facilities.js
     fac_json = json.dumps(facilities, indent=2, default=str)
     with open('data/at_risk_facilities.js', 'w') as f:
         f.write(f"// Auto-generated by IFF scraper — {datetime.now().strftime('%Y-%m-%d %H:%M UTC')}\n")
@@ -914,29 +841,19 @@ def main():
     log.info("=== IFF Incident Scraper Starting ===")
     existing_ids = load_existing_ids()
     log.info(f"Existing incident IDs loaded: {len(existing_ids)}")
-
     all_incidents = []
-
-    # Run all scrapers
     all_incidents += scrape_csb()
     all_incidents += scrape_phmsa()
     all_incidents += scrape_nrc()
     all_incidents += scrape_epa_echo()
     all_incidents += scrape_google_news_rss()
     all_incidents += scrape_osha_violations()
-
-    # Deduplicate
     all_incidents = deduplicate(all_incidents)
-
-    # Remove already-known incidents
     new_incidents = [i for i in all_incidents if i['id'] not in existing_ids]
     log.info(f"New incidents after dedup and filtering: {len(new_incidents)}")
-
-    # Scrape at-risk facilities
     facilities = scrape_at_risk_facilities()
     facilities += scrape_phmsa_corrective_actions()
     facilities += scrape_sec_repair_filings()
-
     write_js(new_incidents, facilities)
     log.info("=== Scraper Complete ===")
 
