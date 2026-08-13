@@ -2,10 +2,11 @@
 // FAILURE WATCH — CONFIG
 // Idaho Fidelity Foundation
 // ============================================================
-// Paste your keys here before deploying to GitHub Pages
+// Never commit live keys. Load GNews from a Worker secret or
+// replace the placeholder locally (do not push it).
 
 const CONFIG = {
-  GNEWS_API_KEY: "8d3067e9f2e8147fe5c756909bf280a9",
+  GNEWS_API_KEY: "YOUR_GNEWS_API_KEY",
   ANTHROPIC_WORKER_URL: "https://iff-incident-proxy.thisisntmyspammail.workers.dev",
 
   // GNews search settings
